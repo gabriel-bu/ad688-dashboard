@@ -1,0 +1,1210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>AD688 Project Dashboard</title>
+<meta name="theme-color" content="#f4f8fc">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<!-- AD688 Group 3 project dashboard. Canonical source for the claude.ai artifact (see AD688-MASTER-GUIDE.md).
+     Styled on the Pharos Lumen consulting site's Daylight tokens, light only by Gabriel's choice.
+     Checklist status lives in the STEPS array in the dashboard script (Claude maintains it);
+     Gabriel's notes live in the artifact database collection "notes". His in-page rewrites of
+     "What we have" / "What is left" (his and his classmates') live in collection "edits" (doc id
+     <item>-have|left, updatedBy = viewer id or "claude"). An edit doc overrides STEPS and is kept,
+     so the page can show who updated each box last. -->
+<style>
+  :root {
+    color-scheme: light;
+    --canvas: #f4f8fc; --surface: #ffffff; --tint: #eaf2f9;
+    --ink: #142433; --ink-2: #43607a; --ink-3: #566f85;
+    --line: rgba(20, 36, 51, 0.12); --line-2: rgba(20, 36, 51, 0.22);
+    --azure: #2278bd; --azure-deep: #1b629c; --sky-ink: #33739e; --azure-soft: rgba(34, 120, 189, 0.10);
+    --deep: #10334d; --deep-2: #16405e; --deep-text: #e9f3fb; --deep-text-2: rgba(233, 243, 251, 0.78); --deep-line: rgba(233, 243, 251, 0.15); --sky-deep: #8ec8ee;
+    --wash1: rgba(93, 178, 230, 0.22); --wash2: rgba(150, 214, 255, 0.20); --wash3: rgba(34, 120, 189, 0.10);
+    --ok: #157f4a; --ok-soft: rgba(21, 127, 74, 0.11);
+    --warn: #8a5a00; --warn-soft: rgba(196, 132, 0, 0.13);
+    --miss: #a8322d; --miss-soft: rgba(192, 58, 52, 0.10);
+    --f-display: 'Manrope', system-ui, sans-serif;
+    --f-body: 'Inter', system-ui, -apple-system, sans-serif;
+    --f-eyebrow: 'Cinzel', 'Trajan Pro', Georgia, serif;
+    --radius: 8px; --radius-card: 14px;
+    --shadow: 0 1px 2px rgba(20, 36, 51, 0.05);
+    --ease-expo: cubic-bezier(0.19, 1, 0.22, 1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; background: var(--canvas); scroll-behavior: smooth; scroll-padding-top: 72px; }
+  html, body { overflow-x: clip; width: 100%; }
+  html { background: var(--canvas); }
+  body { font-family: var(--f-body); color: var(--ink); background: var(--canvas); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; padding-bottom: env(safe-area-inset-bottom); }
+  .wrap { width: 100%; max-width: 1040px; margin: 0 auto; padding-left: 16px; padding-right: 16px; }
+  @media (min-width: 700px) { .wrap { padding-left: 32px; padding-right: 32px; } }
+
+  /* hero with the site's daylight wash */
+  .hero { position: relative; overflow: hidden; padding: calc(env(safe-area-inset-top) + 32px) 0 24px; text-align: center; }
+  .hero::before { content: ''; position: absolute; inset: -25% -15%; pointer-events: none;
+    background: radial-gradient(42% 55% at 22% 18%, var(--wash1), transparent 70%), radial-gradient(48% 60% at 80% 12%, var(--wash2), transparent 72%), radial-gradient(55% 50% at 55% 95%, var(--wash3), transparent 75%); }
+  .hero > * { position: relative; }
+  .kicker { font-family: var(--f-eyebrow); font-size: 13px; font-weight: 500; letter-spacing: 0.28em; text-transform: uppercase; color: var(--sky-ink); display: inline-block; position: relative; }
+  @media (min-width: 600px) {
+    .kicker { padding: 0 24px; }
+    .kicker::before, .kicker::after { content: ''; position: absolute; top: 50%; width: 52px; height: 1px; background: linear-gradient(90deg, transparent, rgba(34, 120, 189, 0.5), transparent); }
+    .kicker::before { right: 100%; } .kicker::after { left: 100%; }
+  }
+  h1 { font-family: var(--f-display); font-weight: 800; font-size: clamp(30px, 8vw, 48px); line-height: 1.1; letter-spacing: -0.025em; margin: 14px auto 8px; max-width: 16ch; }
+  .meta { color: var(--ink-3); font-size: 14px; }
+
+  .actions { margin: 20px auto 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 620px; text-align: left; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; font-family: var(--f-body); font-size: 15px; font-weight: 600; line-height: 1.25; padding: 12px 18px; min-height: 48px; border-radius: var(--radius); background: var(--azure); color: #fff; text-decoration: none; text-align: center; box-shadow: 0 1px 2px rgba(20, 36, 51, 0.10); transition: transform .2s var(--ease-expo), background .2s; }
+  .btn:active { transform: translateY(1px); background: var(--azure-deep); }
+  .btn.primary { grid-column: 1 / -1; min-height: 54px; font-size: 16px; }
+  .btn.ghost { background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line-2), var(--shadow); font-size: 14px; }
+  .btn svg { flex: none; }
+  .actions .note { grid-column: 1 / -1; font-size: 13px; color: var(--ink-3); text-align: center; margin-top: 4px; }
+  .actions button.btn { border: 0; cursor: pointer; }
+  .trio { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .trio .btn { padding: 10px 6px; font-size: 13px; }
+
+
+  .tldr { margin-top: 22px; text-align: left; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--azure); border-radius: var(--radius-card); padding: 16px 18px; box-shadow: var(--shadow); }
+  .label { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sky-ink); margin-bottom: 6px; }
+  .tldr p { font-size: 17px; }
+
+  .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 12px; text-align: left; }
+  @media (min-width: 700px) { .stats { grid-template-columns: repeat(4, 1fr); } }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px; box-shadow: var(--shadow); }
+  .stat b { display: block; font-family: var(--f-display); font-size: 30px; font-weight: 800; line-height: 1.1; }
+  .stat span { font-size: 13px; color: var(--ink-2); }
+  .stat.ok b { color: var(--ok); } .stat.part b { color: var(--warn); } .stat.no b { color: var(--miss); } .stat.day b { color: var(--azure); }
+
+  nav.jump { position: sticky; top: 0; z-index: 5; background: rgba(244, 248, 252, 0.9); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  nav.jump .wrap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding-top: 8px; padding-bottom: 8px; }
+  nav.jump a { display: flex; align-items: center; justify-content: center; min-height: 44px; border-radius: var(--radius); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); color: var(--ink); text-decoration: none; font-weight: 600; font-size: 13px; text-align: center; line-height: 1.2; padding: 4px 6px; }
+  nav.jump a:active { background: var(--tint); }
+
+  section { padding: 36px 0 8px; }
+  .eyebrow { font-family: var(--f-eyebrow); font-size: 15px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sky-ink); display: inline-block; position: relative; padding-bottom: 8px; margin-bottom: 10px; }
+  .eyebrow::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(34, 120, 189, 0.5), transparent); }
+  h2 { font-family: var(--f-display); font-weight: 800; font-size: clamp(24px, 6vw, 32px); letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 12px; }
+  h3 { font-family: var(--f-display); font-weight: 700; font-size: 18px; line-height: 1.3; margin-bottom: 6px; }
+  .lede { color: var(--ink-2); margin-bottom: 16px; font-size: 17px; }
+
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-card); box-shadow: var(--shadow); padding: 18px; }
+  .card + .card { margin-top: 12px; }
+  main a { color: var(--azure-deep); font-weight: 600; text-underline-offset: 3px; text-decoration-color: rgba(34, 120, 189, 0.35); }
+  .card.key { border-left: 4px solid var(--azure); }
+
+  .step { position: relative; padding-left: 24px; }
+  .step::before { content: ""; position: absolute; left: 0; top: 18px; bottom: 18px; width: 3px; border-radius: 3px; background: linear-gradient(180deg, var(--azure), rgba(34, 120, 189, 0.25)); }
+  .when { font-size: 13px; font-weight: 700; color: var(--azure-deep); }
+  ul.plain { margin: 8px 0 0 18px; } ul.plain li + li { margin-top: 4px; }
+  .who { margin-top: 12px; font-size: 14px; color: var(--ink-2); background: var(--tint); border-radius: var(--radius); padding: 8px 10px; }
+
+  .pill { display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+  .pill.ok { color: var(--ok); background: var(--ok-soft); }
+  .pill.part { color: var(--warn); background: var(--warn-soft); }
+  .pill.no { color: var(--miss); background: var(--miss-soft); }
+  .pill.info { color: var(--azure-deep); background: var(--azure-soft); }
+
+  .rows { list-style: none; }
+  .rows li { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 12px 0; border-top: 1px solid var(--line); align-items: start; }
+  .rows li:first-child { border-top: 0; padding-top: 2px; }
+  .rows .t { font-weight: 600; }
+  .rows .n { grid-column: 1 / -1; font-size: 14px; color: var(--ink-2); }
+  .sub { font-weight: 700; margin: 16px 0 4px; color: var(--azure-deep); font-size: 14px; letter-spacing: 0.02em; }
+  .sub:first-of-type { margin-top: 6px; }
+
+  .points { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; }
+  @media (min-width: 700px) { .points { grid-template-columns: repeat(4, 1fr); } }
+  .points div { background: var(--tint); border-radius: var(--radius); padding: 12px; }
+  .points b { display: block; font-family: var(--f-display); font-size: 24px; font-weight: 800; color: var(--azure); line-height: 1.1; }
+  .points div.zero b { color: var(--ink-3); }
+  .points span { font-size: 13px; color: var(--ink-2); }
+
+  .skill { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; padding: 10px 0; border-top: 1px solid var(--line); align-items: center; }
+  .skill:first-of-type { border-top: 0; }
+  .skill .name { font-weight: 600; }
+  .bars { grid-column: 1 / -1; display: grid; gap: 4px; }
+  .bar { display: grid; grid-template-columns: 76px 1fr 44px; gap: 8px; align-items: center; font-size: 12px; color: var(--ink-3); }
+  .bar .track { height: 8px; border-radius: 8px; background: var(--tint); overflow: hidden; }
+  .bar .fill { height: 100%; border-radius: 8px; background: var(--azure); }
+  .bar .fill.team { background: #8aa3b8; }
+  .bar b { color: var(--ink); font-weight: 600; text-align: right; }
+
+  .rec .num { font-family: var(--f-display); font-weight: 800; color: var(--azure); font-size: 14px; }
+  .rec .why { margin-top: 6px; font-size: 15px; color: var(--ink-2); }
+  .rec .owner { margin-top: 10px; font-size: 14px; }
+  .rec .owner b { color: var(--azure-deep); }
+
+
+  .split { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  @media (min-width: 700px) { .split { grid-template-columns: repeat(3, 1fr); } }
+  .split .card + .card { margin-top: 0; }
+  .split h3 { color: var(--azure-deep); }
+  .split ul { margin-left: 18px; font-size: 15px; } .split li + li { margin-top: 6px; }
+
+  /* deep harbor band: the site's rhythm section */
+  .band { background: var(--deep); color: var(--deep-text); margin-top: 36px; padding: 36px 0; background-image: radial-gradient(60% 80% at 85% 0%, rgba(142, 200, 238, 0.14), transparent 70%); }
+  .band .eyebrow { color: var(--sky-deep); }
+  .band .eyebrow::after { background: linear-gradient(90deg, transparent, rgba(142, 200, 238, 0.6), transparent); }
+  .band h2 { color: var(--deep-text); }
+  .band p { font-size: 17px; line-height: 1.65; color: var(--deep-text); padding-left: 14px; border-left: 2px solid var(--sky-deep); }
+  .band p + p { margin-top: 14px; }
+
+  [hidden] { display: none !important; }
+
+  /* calendar: drawn to scale Sep 7 to Oct 16; stages, today line, and countdowns update themselves from the date */
+  .cal-card { padding: 18px 18px 6px; }
+  .ruler { position: relative; height: 150px; }
+  .r-track { position: absolute; left: 0; right: 0; top: 64px; height: 8px; border-radius: 8px; background: var(--tint); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; }
+  .r-track::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, var(--line-2) 0 1px, transparent 1px calc(100% / 39)); }
+  .r-past { position: absolute; left: 0; top: 0; bottom: 0; width: var(--past, 0%); border-radius: 8px; background: linear-gradient(90deg, var(--sky-deep), var(--azure)); transition: width 1.4s var(--ease-expo) .2s; }
+  .ruler:not(.in) .r-past { width: 0; }
+  .r-m { position: absolute; top: 68px; left: var(--x); width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 3px var(--line-2); }
+  .r-m.m-done { background: var(--azure); box-shadow: 0 0 0 3px var(--azure); }
+  .r-m.m-run { background: #fff; box-shadow: 0 0 0 3px var(--azure); }
+  .r-m.m-run::after { content: ""; position: absolute; inset: -3px; border-radius: 50%; box-shadow: 0 0 0 2px var(--azure); animation: ping 2.2s var(--ease-expo) infinite; }
+  @keyframes ping { from { transform: scale(1); opacity: .9; } to { transform: scale(2.6); opacity: 0; } }
+  .r-m.m-past { background: var(--ink-3); box-shadow: 0 0 0 3px var(--ink-3); }
+  .r-lab { position: absolute; left: var(--x); transform: translateX(calc(-1 * var(--x))); display: grid; font-size: 13px; font-weight: 700; line-height: 1.3; color: var(--ink); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .r-lab small { font-size: 12px; font-weight: 500; color: var(--ink-3); }
+  .r-lab.up { top: 6px; } .r-lab.dn, .r-lab.dn2 { top: 86px; }
+  .r-today { position: absolute; left: var(--x); top: 52px; bottom: 0; width: 2px; margin-left: -1px;
+    background: linear-gradient(var(--ink), var(--ink)) top / 2px 32px no-repeat, repeating-linear-gradient(to bottom, var(--ink-3) 0 2px, transparent 2px 6px) bottom / 2px calc(100% - 32px) no-repeat; }
+  .r-today em { position: absolute; bottom: 0; left: 0; transform: translateX(calc(-1 * var(--x))); font-style: normal; font-size: 12px; font-weight: 700; color: #fff; background: var(--ink); border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+  /* narrow screens: Oct 7 and Oct 14 sit close on the scale, so Oct 14 drops to its own lane */
+  @media (max-width: 560px) { .r-lab small { display: none; } .ruler { height: 160px; } .r-lab.dn { top: 84px; } .r-lab.dn2 { top: 106px; } }
+  .flow { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px 44px; margin-top: 22px; }
+  @media (max-width: 899px) { .flow { grid-template-columns: 1fr; gap: 36px; } }
+  .flow .card + .card { margin-top: 0; }
+  .edges { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; z-index: 0; }
+  .edges path { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+  .e-done { stroke: var(--azure); }
+  .e-run { stroke: var(--azure); stroke-dasharray: 7 9; animation: flowdash 1s linear infinite; }
+  @keyframes flowdash { to { stroke-dashoffset: -16; } }
+  .e-todo { stroke: var(--ink-3); stroke-dasharray: 2 7; opacity: .7; }
+  .node { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 6px; }
+  .node header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+  .node-k { font-size: 13px; font-weight: 700; color: var(--sky-ink); }
+  .node-state { display: inline-flex; align-items: center; gap: 7px; min-height: 26px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+  .n-done .node-state { color: var(--azure-deep); background: var(--azure-soft); }
+  .node.n-run { box-shadow: 0 0 0 2px var(--azure), var(--shadow); }
+  .n-run .node-state { color: #fff; background: var(--azure); }
+  .n-run .node-state i { width: 7px; height: 7px; border-radius: 50%; background: #fff; animation: blink 1.4s ease-in-out infinite; }
+  @keyframes blink { 50% { opacity: .25; } }
+  .n-todo .node-state { color: var(--ink-2); background: var(--tint); }
+  .n-past .node-state { color: #fff; background: var(--ink-3); }
+  .node h3 { margin: 0; }
+  .node p { font-size: 15px; color: var(--ink-2); }
+  .late { margin-top: 22px; font-size: 14px; color: var(--ink-3); }
+  @media (prefers-reduced-motion: reduce) { .r-m.m-run::after, .e-run, .n-run .node-state i { animation: none; } .r-past { transition: none; } }
+
+  details { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 4px; }
+  summary { cursor: pointer; font-weight: 600; color: var(--azure-deep); min-height: 44px; display: flex; align-items: center; list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; margin-left: auto; font-size: 20px; }
+  details[open] summary::after { content: "\2212"; }
+  details ul { margin: 4px 0 6px 18px; font-size: 15px; } details li + li { margin-top: 4px; }
+
+  footer { padding: 28px 0 40px; color: var(--ink-3); font-size: 13px; }
+  footer ul { margin: 6px 0 0 18px; }
+
+  /* floating contents: button + panel, built from the page's own headings */
+  .toc-fab { position: fixed; z-index: 20; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 18px 0 16px; border: 0; border-radius: 999px; background: var(--deep); color: var(--deep-text); font: 600 14px/1 var(--f-body); box-shadow: 0 10px 28px rgba(8, 28, 44, 0.28), 0 2px 6px rgba(8, 28, 44, 0.18); cursor: pointer; transition: transform .25s var(--ease-expo), background .2s; }
+  .toc-fab:hover { background: var(--deep-2); transform: translateY(-1px); }
+  .toc-fab:focus-visible { outline: 2px solid var(--azure); outline-offset: 3px; }
+  .toc-fab .cur { max-width: 38vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--sky-deep); font-weight: 500; }
+  .toc-fab .cur:empty { display: none; }
+  .toc-fab .cur::before { content: "\00B7\00A0"; color: var(--deep-text-2); }
+  .toc-panel { position: fixed; z-index: 21; left: 12px; right: 12px; bottom: calc(76px + env(safe-area-inset-bottom, 0px)); max-height: min(68vh, 560px); display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 24px 60px rgba(8, 28, 44, 0.28); overflow: hidden; animation: toc-in .3s var(--ease-expo); }
+  @media (min-width: 640px) { .toc-panel { left: auto; right: 16px; width: 340px; } }
+  @keyframes toc-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .toc-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 12px 10px 18px; border-bottom: 1px solid var(--line); }
+  .toc-head b { font-family: var(--f-eyebrow); font-weight: 500; font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--sky-ink); }
+  .toc-head button { width: 40px; height: 40px; border: 0; border-radius: 50%; background: var(--tint); color: var(--ink-2); font-size: 20px; cursor: pointer; }
+  .toc-list { list-style: none; overflow-y: auto; padding: 8px 8px 12px; }
+  .toc-list a { display: flex; align-items: center; min-height: 40px; padding: 6px 10px; border-radius: 10px; color: var(--ink-2); text-decoration: none; font-size: 14px; line-height: 1.3; }
+  .toc-list a:hover { background: var(--tint); color: var(--ink); }
+  .toc-list a:focus-visible { outline: 2px solid var(--azure); outline-offset: -2px; }
+  .toc-list .g > a { margin-top: 6px; font-family: var(--f-display); font-weight: 700; font-size: 15px; color: var(--ink); }
+  .toc-list .g:first-child > a { margin-top: 0; }
+  .toc-list ul { list-style: none; margin-left: 12px; padding-left: 8px; border-left: 1px solid var(--line); }
+  .toc-list a[aria-current="true"] { background: var(--azure-soft); color: var(--azure-deep); font-weight: 600; }
+  .toc-list .g > a.dash-link { color: var(--azure-deep); }
+  footer { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+  @media (prefers-reduced-motion: reduce) { .toc-panel { animation: none; } }
+</style>
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">AD688 · Group 3</div>
+    <h1>Where we are, and what comes next</h1>
+    <div class="meta">Group 3 project status · Tuesday, Sep 29, 2026</div>
+
+    <div class="actions">
+      <button class="btn primary" type="button" data-open-dash>
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="10" y="2" width="6" height="6" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="2" y="10" width="6" height="6" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="currentColor"/></svg>
+        Open project dashboard
+      </button>
+      <div class="note">The professor's checkpoint, final build, and presentation instructions are on Blackboard under Modules 4, 5, and 6.</div>
+    </div>
+
+    <div class="tldr">
+      <div class="label">TL;DR</div>
+      <p>Steps 1 to 3 are mostly built, but the site tells two stories from two different datasets and two tabs are still empty. The checkpoint due <b>Oct 7</b> is worth no points but is where we fix that foundation and pick our final analysis. The work that is graded, the report and presentation, is due <b>Oct 12</b>.</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat ok"><b>8</b><span>checkpoint items done</span></div>
+      <div class="stat part"><b>4</b><span>partly done</span></div>
+      <div class="stat no"><b>1</b><span>not started</span></div>
+      <div class="stat day"><b id="days-left">12</b><span id="days-left-l">days to checkpoint (Oct 7)</span></div>
+    </div>
+  </div>
+</header>
+
+<nav class="jump" aria-label="Jump to section">
+  <div class="wrap">
+    <a href="#big-picture">Big picture</a>
+    <a href="#next">Next deliverable</a>
+    <a href="#say">Our plan</a>
+    <a href="#dates">Calendar</a>
+  </div>
+</nav>
+
+<main>
+<div class="wrap">
+
+<!-- BIG PICTURE -->
+<section id="big-picture">
+  <div class="eyebrow">Part 1</div>
+  <h2>The big picture</h2>
+  <p class="lede">We are building a career guide for students who want to become <b>Data Engineers at insurance companies</b>. The one question it answers: which skills make someone the most qualified for that job?</p>
+
+  <div class="card step">
+    <div class="when">Step 1 · Submitted Sep 9</div>
+    <h3>We picked our lane</h3>
+    <ul class="plain">
+      <li>Career: Data Engineer. Industry: insurance carriers (government industry code 5241, the companies that actually sell and underwrite policies).</li>
+      <li>Built the team website and wrote the question and why it matters.</li>
+      <li>Listed 3 outside sources on data careers in insurance.</li>
+    </ul>
+    <div class="who">Genevieve set up the site and intro page.</div>
+  </div>
+
+  <div class="card step">
+    <div class="when">Step 2 · Submitted Sep 16</div>
+    <h3>We cut the data down to our slice</h3>
+    <ul class="plain">
+      <li>Out of 165,386 job posts, 1,895 came from insurance carriers, and only <b>27</b> were data jobs.</li>
+      <li>The data was thin: salary on just 5 of 27 posts, years of experience on none.</li>
+      <li>The market snapshot page shows remote work is the most common setup (12 of 27), and "analytics" is the most requested skill.</li>
+    </ul>
+    <div class="who">Gabriel filtered the data. Haben cleaned it and built the market snapshot page.</div>
+  </div>
+
+  <div class="card step">
+    <div class="when">Step 3 · Submitted Sep 23</div>
+    <h3>New data, and our skill gap</h3>
+    <ul class="plain">
+      <li>The professor issued a bigger 2024 dataset for Step 3. Gabriel loaded it, checked it was complete, and pulled 1,908 insurance posts, <b>29</b> of them true Data Engineer roles.</li>
+      <li>Each of us rated ourselves 1 to 5 on 10 skills. Haben compared that to how often employers ask for each skill.</li>
+      <li>The site was reorganized into 8 tabs.</li>
+    </ul>
+    <div class="who">Gabriel handled the new dataset. Haben built the skill gap page. Genevieve reorganized the site.</div>
+  </div>
+
+  <div class="card" style="margin-top:12px">
+    <h3>What the skill gap showed</h3>
+    <p style="color:var(--ink-2);font-size:15px;margin-bottom:6px">How often employers ask for a skill, next to our team's average self-rating (out of 5).</p>
+
+    <div class="skill"><span class="name">Cloud (AWS, Azure)</span><span class="pill no">Top gap</span>
+      <div class="bars"><div class="bar">Employers<div class="track"><div class="fill" style="width:93%"></div></div><b>93%</b></div>
+      <div class="bar">Our team<div class="track"><div class="fill team" style="width:27%"></div></div><b>1.3</b></div></div></div>
+    <div class="skill"><span class="name">Python</span><span class="pill no">Top gap</span>
+      <div class="bars"><div class="bar">Employers<div class="track"><div class="fill" style="width:86%"></div></div><b>86%</b></div>
+      <div class="bar">Our team<div class="track"><div class="fill team" style="width:27%"></div></div><b>1.3</b></div></div></div>
+    <div class="skill"><span class="name">Git and code workflows</span><span class="pill no">Big gap</span>
+      <div class="bars"><div class="bar">Employers<div class="track"><div class="fill" style="width:93%"></div></div><b>93%</b></div>
+      <div class="bar">Our team<div class="track"><div class="fill team" style="width:40%"></div></div><b>2.0</b></div></div></div>
+    <div class="skill"><span class="name">Spark</span><span class="pill no">Big gap</span>
+      <div class="bars"><div class="bar">Employers<div class="track"><div class="fill" style="width:62%"></div></div><b>62%</b></div>
+      <div class="bar">Our team<div class="track"><div class="fill team" style="width:20%"></div></div><b>1.0</b></div></div></div>
+    <div class="skill"><span class="name">Data pipelines</span><span class="pill part">Some gap</span>
+      <div class="bars"><div class="bar">Employers<div class="track"><div class="fill" style="width:62%"></div></div><b>62%</b></div>
+      <div class="bar">Our team<div class="track"><div class="fill team" style="width:53%"></div></div><b>2.7</b></div></div></div>
+    <div class="skill"><span class="name">SQL</span><span class="pill ok">Close</span>
+      <div class="bars"><div class="bar">Employers<div class="track"><div class="fill" style="width:76%"></div></div><b>76%</b></div>
+      <div class="bar">Our team<div class="track"><div class="fill team" style="width:73%"></div></div><b>3.7</b></div></div></div>
+
+    <p style="margin-top:12px;font-size:15px;color:var(--ink-2)">Data modeling, databases, data quality, and Databricks showed no gap.</p>
+  </div>
+
+  <div class="card">
+    <h3>The website today</h3>
+    <p>Our <a href="https://gheydt.github.io/ad688group3.github.io/index.html" target="_blank" rel="noopener">team site</a> has 8 tabs. <b>6 have real content</b> (<a href="https://gheydt.github.io/ad688group3.github.io/index.html" target="_blank" rel="noopener">Home</a>, <a href="https://gheydt.github.io/ad688group3.github.io/introduction.html" target="_blank" rel="noopener">Project Overview</a>, <a href="https://gheydt.github.io/ad688group3.github.io/data_preparation.html" target="_blank" rel="noopener">Data Preparation</a>, <a href="https://gheydt.github.io/ad688group3.github.io/market_baseline.html" target="_blank" rel="noopener">Exploratory Analysis</a>, <a href="https://gheydt.github.io/ad688group3.github.io/skill_gap_analysis.html" target="_blank" rel="noopener">Skill Gap</a>, <a href="https://gheydt.github.io/ad688group3.github.io/career_evaluation.html" target="_blank" rel="noopener">Career Evaluation</a>). Genevieve added the Data Preparation and Career Evaluation pages on Sep 28. <b><a href="https://gheydt.github.io/ad688group3.github.io/ml_methods.html" target="_blank" rel="noopener">Predictive Modeling</a> and <a href="https://gheydt.github.io/ad688group3.github.io/final_recommendations.html" target="_blank" rel="noopener">Final Recommendations</a></b> are still empty.</p>
+  </div>
+</section>
+
+<!-- NEXT DELIVERABLE -->
+<section id="next">
+  <div class="eyebrow">Part 2</div>
+  <h2>The next deliverable</h2>
+
+  <div class="card key">
+    <div class="label">Module 4 checkpoint · due Oct 7 · no points</div>
+    <p>No new analysis. The goal is to prove Steps 1 to 3 are <b>complete, consistent, and polished</b> before the final build. The professor's words: do not widen scope, and if you are behind, use the whole week to catch up.</p>
+  </div>
+
+  <div class="card">
+    <h3>Where the points actually are</h3>
+    <p style="color:var(--ink-2);font-size:15px">From the syllabus grade table. The four project milestones, including this checkpoint, carry no points. They feed the graded work.</p>
+    <div class="points">
+      <div><b>80</b><span>Managerial report (website + Word report)</span></div>
+      <div><b>40</b><span>Group presentation</span></div>
+      <div><b>40</b><span>Peer feedback on teammates</span></div>
+      <div class="zero"><b>0</b><span>Milestones, including this checkpoint</span></div>
+    </div>
+    <p style="margin-top:10px;font-size:14px;color:var(--ink-3)">The standup document is ungraded on its own but counts toward the final project participation grade.</p>
+  </div>
+
+  <div class="card">
+    <h3>What we have to do this week</h3>
+    <ol style="margin-left:20px">
+      <li>Review every page for missing explanations or weak charts.</li>
+      <li>Check every page still matches Data Engineer + insurance carriers.</li>
+      <li>Tighten the storyline so a reader can follow it start to finish.</li>
+      <li>List what is left for the final build.</li>
+      <li>Submit the one-page standup document.</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>The professor's checklist, scored against our site</h3>
+
+    <p class="sub">Step 1 · Scope</p>
+    <ul class="rows">
+      <li><span class="t">Career pathway chosen</span><span class="pill ok">Done</span></li>
+      <li><span class="t">Industry code chosen and justified</span><span class="pill ok">Done</span><span class="n">Code 5241 is now named on the Data Preparation and Career Evaluation pages, with the reason we chose insurance.</span></li>
+      <li><span class="t">Project question stated</span><span class="pill ok">Done</span></li>
+      <li><span class="t">Website and rationale page</span><span class="pill ok">Done</span></li>
+      <li><span class="t">Literature review and references</span><span class="pill part">Partial</span><span class="n">Eight links across two pages, but no written review of what they say.</span></li>
+    </ul>
+
+    <p class="sub">Step 2 · Data and market snapshot</p>
+    <ul class="rows">
+      <li><span class="t">Filtered dataset</span><span class="pill ok">Done</span></li>
+      <li><span class="t">Cleaning steps written up</span><span class="pill part">Partial</span><span class="n">The <a href="https://gheydt.github.io/ad688group3.github.io/data_preparation.html" target="_blank" rel="noopener">Data Preparation</a> page now has the write-up. Its bullet lists run together into one line and need a small formatting fix.</span></li>
+      <li><span class="t">Market snapshot page</span><span class="pill ok">Done</span><span class="n">Built on the old dataset, though.</span></li>
+      <li><span class="t">Charts for salary, location, experience, remote</span><span class="pill part">Partial</span><span class="n">Only remote and skills are charted. Salary and location are plain tables; experience is marked unavailable.</span></li>
+    </ul>
+
+    <p class="sub">Step 3 · Skill gap</p>
+    <ul class="rows">
+      <li><span class="t">Skill gap analysis</span><span class="pill ok">Done</span></li>
+      <li><span class="t">Comparison table or scorecard</span><span class="pill ok">Done</span></li>
+      <li><span class="t">Draft recommendations</span><span class="pill no">Missing</span><span class="n">No upskilling plan yet. Step 3 asked for one: which skills each member learns first, which courses help, and how we cover for each other.</span></li>
+      <li><span class="t">Site readable and logical</span><span class="pill part">Partial</span><span class="n">2 of 8 tabs are still empty pages.</span></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Standup document (what we fill in)</h3>
+    <ul class="plain">
+      <li>Team name, career pathway, industry code</li>
+      <li>What we completed this week</li>
+      <li>What we will complete next week</li>
+      <li>What is blocking us or needs a decision</li>
+      <li>Status of Step 1, Step 2, Step 3</li>
+      <li>Who ran the standup</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Right after: the final build (due Oct 12)</h3>
+    <p>We pick <b>at least one</b> analysis that helps a job seeker decide:</p>
+    <ul class="rows" style="margin-top:6px">
+      <li><span class="t">A. Predict salary</span><span class="n">What drives pay: experience, remote, skills, location.</span></li>
+      <li><span class="t">B. Sort jobs into groups</span><span class="n">For example remote vs on-site, or entry-level vs senior.</span></li>
+      <li><span class="t">C. Scorecard or ranking</span><span class="n">Rank roles or employers by pay, accessibility, and fit. We have to justify the weights.</span></li>
+    </ul>
+    <details>
+      <summary>Everything else due Oct 12</summary>
+      <ul>
+        <li>Every result explained in job-seeker terms: what we measured, why it matters, which inputs we used, how we checked it, what it means.</li>
+        <li>All site tabs finished and live.</li>
+        <li>A Word report generated from the site, 7 sections: framing, scope and data, market snapshot, skill gap, final analysis, recommendations, limitations.</li>
+        <li>Team contributions visible (commits or logs), and sources cited properly.</li>
+        <li>Slides for a 10 to 12 minute talk plus 3 minutes of questions. Everyone speaks. Must include a scope slide, a market chart, a skill gap chart, an analysis result, and a recommendations slide.</li>
+        <li>Peer evaluation of teammates.</li>
+      </ul>
+    </details>
+  </div>
+</section>
+
+</div>
+
+<!-- OUR PLAN -->
+<div class="wrap">
+<section id="say">
+  <div class="eyebrow">Part 3</div>
+  <h2>Our plan</h2>
+  <p class="lede">In one line: <b>lock the foundation first, then pick one analysis and do it well.</b></p>
+
+  <div class="card key rec">
+    <div class="num">1 · Put everything on the 2024 dataset</div>
+    <h3>Right now our site tells two stories</h3>
+    <p class="why">The market snapshot uses the old data (27 posts, 5 salaries, no experience). The skill gap uses the new data (29 posts). The new data is far richer: salary on 13 of the 29 roles and experience on 22. Switching fixes the "experience unavailable" hole and the missing charts in one move, and Step 3 told us to use the new dataset.</p>
+    <p class="owner"><b>Proposed owners:</b> Gabriel builds the clean 2024 file; Haben reruns the snapshot charts on it.</p>
+  </div>
+
+  <div class="card key rec">
+    <div class="num">2 · Agree on one definition of "Data Engineer"</div>
+    <h3>The two pages count different jobs</h3>
+    <p class="why">The snapshot counts analysts and scientists too; the skill gap counts only true engineering titles. Pick the strict engineering list (29 roles) as the core so every number on the site describes the same group. The checkpoint asks us to confirm every page matches our scope.</p>
+  </div>
+
+  <div class="card key rec">
+    <div class="num">3 · Fill the empty pages</div>
+    <h3>One page left to start</h3>
+    <p class="why">Data Preparation and Career Evaluation now have content. Final Recommendations needs a first draft built from the upskilling plan. Career Evaluation could add a short section on what makes a job attractive and attainable.</p>
+  </div>
+
+  <div class="card key rec">
+    <div class="num">4 · Use a scorecard for the final analysis</div>
+    <h3>Option C fits our data best</h3>
+    <p class="why">29 roles is too few to train a trustworthy prediction model. A scorecard that ranks those roles on pay, experience required, remote options, and skill match answers our question directly. As a bonus, we can predict salary across all 1,908 insurance posts (1,204 of them list a salary), which is big enough for a real model.</p>
+    <p class="owner"><b>Proposed owner:</b> Gabriel on the salary model.</p>
+  </div>
+
+  <div class="card key rec">
+    <div class="num">5 · Name our limits honestly</div>
+    <h3>It makes us look stronger, not weaker</h3>
+    <p class="why">State Farm posted 15 of the 29 roles, so one company shapes the results. The sample is small. Limitations is one of the 7 required report sections anyway.</p>
+  </div>
+
+  <div class="card key rec">
+    <div class="num">6 · Quick Step 1 fixes</div>
+    <h3>Small edits, two checklist items</h3>
+    <p class="why">Industry code 5241 is now named and explained. What remains: turn the source links into two or three sentences each on what they say, cited in APA style.</p>
+  </div>
+
+  <h3 style="margin:26px 0 10px">Who does what (proposed)</h3>
+  <div class="split">
+    <div class="card"><h3>Gabriel</h3><ul><li>Clean 2024 data file</li><li>Data Preparation page</li><li>Salary model</li></ul></div>
+    <div class="card"><h3>Haben</h3><ul><li>Rerun snapshot charts on 2024 data</li><li>Salary, location, experience charts in one consistent style</li><li>Upskilling plan on the skill gap page</li></ul></div>
+    <div class="card"><h3>Genevieve</h3><ul><li>Intro page fixes and literature review</li><li>Career Evaluation page and scorecard weights</li><li>Word report setup and slide outline</li></ul></div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h3>Decisions we still need to make</h3>
+    <ul class="rows" style="margin-top:4px">
+      <li><span class="t">Move the whole site to the 2024 data?</span><span class="pill ok">Yes</span></li>
+      <li><span class="t">Which "Data Engineer" definition?</span><span class="pill ok">Strict, 29</span></li>
+      <li><span class="t">Which final analysis?</span><span class="pill ok">Scorecard + salary</span></li>
+      <li><span class="t">Who writes and submits the standup doc?</span><span class="pill info">Decide</span></li>
+      <li><span class="t">Who presents which part on Oct 14?</span><span class="pill info">Decide</span></li>
+    </ul>
+    <p style="margin-top:10px;font-size:14px;color:var(--ink-3)">Green pills are the proposed answers.</p>
+  </div>
+</section>
+</div>
+
+<div class="band" id="plan-30">
+  <div class="wrap">
+    <div class="eyebrow">The plan in 30 seconds</div>
+    <p>We are in good shape on the analysis, but the site is inconsistent: the market snapshot is on the old data, the skill gap is on the new data, and two tabs are empty.</p>
+    <p>For the checkpoint, we move everything to the 2024 data, fill the empty pages, and add a draft upskilling plan.</p>
+    <p>For the final, we build a scorecard ranking the 29 roles, plus a salary model on all the insurance posts.</p>
+  </div>
+</div>
+
+<!-- CALENDAR -->
+<div class="wrap">
+<section id="dates">
+  <div class="eyebrow">Part 4</div>
+  <h2>The calendar</h2>
+  <p class="lede">Where we are and where we have to go, drawn to scale from Sep 7 to Oct 16. It updates itself every day.</p>
+  <div class="card cal-card">
+    <div class="ruler" id="ruler" role="img" aria-label="Timeline drawn to scale from September 7 to October 16, 2026: Step 1 submitted Sep 9, Step 2 submitted Sep 16, Step 3 submitted Sep 23, Module 4 checkpoint due Oct 7, final build due Oct 12, final presentations Oct 14.">
+      <div class="r-track"><div class="r-past"></div></div>
+      <span class="r-m" style="--x:5.128%"></span>
+      <span class="r-m" style="--x:23.077%"></span>
+      <span class="r-m" style="--x:41.026%"></span>
+      <span class="r-m" style="--x:76.923%"></span>
+      <span class="r-m" style="--x:89.744%"></span>
+      <span class="r-m" style="--x:94.872%"></span>
+      <span class="r-lab up" style="--x:5.128%">Sep 9<small>Step 1</small></span>
+      <span class="r-lab dn" style="--x:23.077%">Sep 16<small>Step 2</small></span>
+      <span class="r-lab up" style="--x:41.026%">Sep 23<small>Step 3</small></span>
+      <span class="r-lab dn" style="--x:76.923%">Oct 7<small>Checkpoint</small></span>
+      <span class="r-lab up" style="--x:89.744%">Oct 12<small>Final build</small></span>
+      <span class="r-lab dn2" style="--x:94.872%">Oct 14<small>Presentations</small></span>
+      <span class="r-today" id="r-today" style="--x:46.154%"><em id="r-today-l">Today</em></span>
+    </div>
+  </div>
+  <div class="flow" id="flow">
+    <svg class="edges" id="edges" aria-hidden="true"></svg>
+    <article class="card node" data-date="2026-09-09" data-kind="step"><header><span class="node-k">Step 1</span><span class="node-state"></span></header><h3>We picked our lane</h3><p>Career pathway, industry code 5241, the project question, and the team website.</p></article>
+    <article class="card node" data-date="2026-09-16" data-kind="step"><header><span class="node-k">Step 2</span><span class="node-state"></span></header><h3>We cut the data down to our slice</h3><p>165,386 job posts filtered to 1,895 insurance posts and 27 data jobs.</p></article>
+    <article class="card node" data-date="2026-09-23" data-kind="step"><header><span class="node-k">Step 3</span><span class="node-state"></span></header><h3>New data, and our skill gap</h3><p>The 2024 dataset, 29 Data Engineer roles, and our skill-gap ratings.</p></article>
+    <article class="card node" data-date="2026-10-07" data-kind="due"><header><span class="node-k">Module 4 checkpoint</span><span class="node-state"></span></header><h3>Checkpoint and standup doc</h3><p>No points. Prove Steps 1 to 3 are complete before the final build.</p></article>
+    <article class="card node" data-date="2026-10-12" data-kind="due"><header><span class="node-k">Final build</span><span class="node-state"></span></header><h3>Report, website, slides</h3><p>Final Word report, finished website, slides, peer evaluation.</p></article>
+    <article class="card node" data-date="2026-10-14" data-kind="due"><header><span class="node-k">Presentations</span><span class="node-state"></span></header><h3>Final presentations in class</h3><p>A 10 to 12 minute talk plus 3 minutes of questions. Everyone speaks.</p></article>
+  </div>
+  <p class="late">The course schedule says late work is not accepted. The syllabus softens this slightly: late work is rarely accepted, and only with a penalty.</p>
+</section>
+</div>
+<script>
+(function () {
+  // Everything here is computed from today's date, so the calendar and countdowns stay current on their own.
+  var DAY = 864e5, START = Date.UTC(2026, 8, 7), SPAN = 39;
+  var now = new Date(), today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  var md = function (t) { return new Date(t).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" }); };
+  var ruler = document.getElementById("ruler"), flow = document.getElementById("flow"), svg = document.getElementById("edges");
+  var nodes = [].slice.call(flow.querySelectorAll(".node")), marks = [].slice.call(ruler.querySelectorAll(".r-m"));
+  var dates = nodes.map(function (n) { var p = n.dataset.date.split("-"); return Date.UTC(+p[0], +p[1] - 1, +p[2]); });
+  var next = -1;
+  dates.forEach(function (d, i) { if (next < 0 && d >= today) next = i; });
+  var states = nodes.map(function (n, i) {
+    var d = dates[i], left = Math.round((d - today) / DAY);
+    if (d < today) return n.dataset.kind === "step" ? ["done", "Submitted " + md(d)] : ["past", "Due date passed"];
+    if (i === next) return ["run", left === 0 ? "Due today" : "Up next · in " + left + (left === 1 ? " day" : " days")];
+    return ["todo", "Due " + md(d) + " · in " + left + " days"];
+  });
+  nodes.forEach(function (n, i) {
+    n.classList.add("n-" + states[i][0]);
+    n.querySelector(".node-state").innerHTML = (states[i][0] === "run" ? "<i></i>" : "") + states[i][1];
+    marks[i].classList.add("m-" + states[i][0]);
+  });
+  var tx = Math.min(100, Math.max(0, (today - START) / DAY / SPAN * 100)).toFixed(3) + "%";
+  ruler.style.setProperty("--past", tx);
+  document.getElementById("r-today").style.setProperty("--x", tx);
+  document.getElementById("r-today-l").textContent = "Today, " + md(today);
+
+  // Arrows between the stage cards, from layout boxes so they stay attached at every width.
+  function drawEdges() {
+    var w = flow.clientWidth, h = flow.clientHeight, out = "";
+    svg.setAttribute("width", w); svg.setAttribute("height", h); svg.setAttribute("viewBox", "0 0 " + w + " " + h);
+    var R = nodes.map(function (n) { return { x: n.offsetLeft, y: n.offsetTop, w: n.offsetWidth, h: n.offsetHeight }; });
+    out += '<defs><marker id="ah-on" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1 L9 5 L1 9 z" fill="#2278bd"/></marker>' +
+      '<marker id="ah-off" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1 L9 5 L1 9 z" fill="#566f85"/></marker></defs>';
+    for (var i = 0; i < R.length - 1; i++) {
+      var a = R[i], b = R[i + 1], d, s = states[i + 1][0];
+      var cls = s === "run" ? "e-run" : (s === "done" || s === "past") ? "e-done" : "e-todo";
+      if (Math.abs(a.y - b.y) < 6) {
+        var y = a.y + Math.min(a.h, b.h) * 0.5;
+        d = "M" + (a.x + a.w + 6) + " " + y + " L" + (b.x - 8) + " " + y;
+      } else {
+        var x1 = a.x + a.w / 2, y1 = a.y + a.h + 6, x2 = b.x + b.w / 2, y2 = b.y - 8, my = (y1 + y2) / 2;
+        if (Math.abs(x1 - x2) < 2) d = "M" + x1 + " " + y1 + " L" + x2 + " " + y2;
+        else {
+          var r = Math.min(14, Math.abs(x1 - x2) / 2, Math.abs(y2 - y1) / 4), sx = x2 < x1 ? -1 : 1;
+          d = "M" + x1 + " " + y1 + " L" + x1 + " " + (my - r) + " Q" + x1 + " " + my + " " + (x1 + sx * r) + " " + my + " L" + (x2 - sx * r) + " " + my + " Q" + x2 + " " + my + " " + x2 + " " + (my + r) + " L" + x2 + " " + y2;
+        }
+      }
+      out += '<path class="' + cls + '" d="' + d + '" marker-end="url(#' + (cls === "e-todo" ? "ah-off" : "ah-on") + ')"/>';
+    }
+    svg.innerHTML = out;
+  }
+  drawEdges();
+  window.addEventListener("resize", drawEdges);
+  if ("ResizeObserver" in window) new ResizeObserver(drawEdges).observe(flow);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawEdges);
+
+  // The elapsed-time fill grows in when the ruler scrolls into view.
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { ruler.classList.add("in"); io.disconnect(); } }); }, { threshold: 0.3 });
+    io.observe(ruler);
+  } else ruler.classList.add("in");
+
+  // Hero countdown to the checkpoint, from the same clock.
+  var left = Math.round((Date.UTC(2026, 9, 7) - today) / DAY), dn = document.getElementById("days-left"), dl = document.getElementById("days-left-l");
+  if (dn && dl) {
+    if (left > 1) { dn.textContent = left; }
+    else if (left === 1) { dn.textContent = "1"; dl.textContent = "day to checkpoint (Oct 7)"; }
+    else if (left === 0) { dn.textContent = "0"; dl.textContent = "days left: checkpoint due today (Oct 7)"; }
+    else { dn.textContent = "0"; dl.textContent = "days left: checkpoint date passed (Oct 7)"; }
+  }
+})();
+</script>
+</main>
+
+<footer class="wrap">
+  <b>Where every claim comes from</b>
+  <ul>
+    <li>Due dates: the Blackboard grade center. Presentation day: the course schedule.</li>
+    <li>Points: syllabus section 6.7. Late work: syllabus 7.3 and the course schedule.</li>
+    <li>Checkpoint, final build, presentation: the professor's Module 4, 5, and 6 project pages (buttons at the top, copied word for word from Blackboard).</li>
+    <li>Project status: the team website as of its latest update on Sep 28. Data counts and skill-gap numbers were recomputed from the team's own files and match the site.</li>
+  </ul>
+</footer>
+<style>
+  /* ── Checkpoint dashboard ─────────────────────────────────────────── */
+  :root {
+    --d-night: #0a2236; --d-night-2: #123a58; --d-glow: #38bdf8; --d-glow-2: #6366f1;
+    --s-done: #3c8f6e; --s-done-soft: #eef3f8; --s-done-ink: #43607a;
+    --s-part: #c79a3e; --s-part-soft: #eef3f8; --s-part-ink: #43607a;
+    --s-miss: #c0595d; --s-miss-soft: #eef3f8; --s-miss-ink: #43607a;
+  }
+  dialog.dash { border: 0; padding: 0; width: 100%; max-width: 100%; height: 100%; max-height: 100%; margin: 0; background: var(--canvas); color: var(--ink); overflow: hidden; }
+  @media (min-width: 760px) { dialog.dash { width: min(1240px, 94vw); height: min(900px, 92vh); margin: auto; border-radius: 22px; box-shadow: 0 30px 80px rgba(8, 28, 44, 0.45); } }
+  dialog.dash::backdrop { background: rgba(8, 24, 38, 0.55); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+  dialog.dash[open] { animation: dash-in .5s var(--ease-expo); }
+  @keyframes dash-in { from { transform: translateY(24px) scale(.985); opacity: 0; } to { transform: none; opacity: 1; } }
+  .dash-shell { display: flex; flex-direction: column; height: 100%; }
+
+  .dash-top { position: relative; overflow: hidden; color: #eaf6ff; background: linear-gradient(160deg, #0e2c44 0%, #133a57 100%); padding: calc(env(safe-area-inset-top, 0px) + 18px) 20px 20px; flex: none; }
+  .dash-top::before { content: ''; position: absolute; inset: -60% -20% auto auto; width: 60%; height: 200%; background: radial-gradient(closest-side, rgba(142, 200, 238, 0.14), transparent 70%); pointer-events: none; }
+  @keyframes aurora { from { transform: translate(0, 0); } to { transform: translate(-8%, 6%); } }
+  .dash-top > * { position: relative; z-index: 1; }
+  .dash-bar { display: flex; align-items: center; gap: 10px; }
+  .dash-bar .k { font-family: var(--f-eyebrow); font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; color: #9fd8f7; }
+  .dash-bar h2 { font-family: var(--f-display); font-weight: 800; font-size: clamp(20px, 4.4vw, 28px); letter-spacing: -0.02em; margin: 2px 0 0; color: #fff; }
+  .dash-bar .spacer { flex: 1; }
+  .glass-btn { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.18); background: rgba(255, 255, 255, 0.08); color: #fff; font: 600 14px/1 var(--f-body); cursor: pointer; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+  .glass-btn:hover { background: rgba(255, 255, 255, 0.14); }
+  .glass-btn.icon { width: 44px; padding: 0; justify-content: center; font-size: 22px; }
+  .glass-btn:focus-visible, .tabs2 button:focus-visible, .it-head:focus-visible, .note-btn:focus-visible { outline: 2px solid var(--d-glow); outline-offset: 2px; }
+  .badge { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px; background: #fff; color: #0e2c44; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
+  .badge[hidden] { display: none !important; }
+
+  .dash-kpis { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center; margin-top: 18px; }
+  .ring { width: 104px; height: 104px; position: relative; }
+  .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring .num { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; font-family: var(--f-display); }
+  .ring .num b { font-size: 30px; font-weight: 800; line-height: 1; color: #fff; }
+  .ring .num span { display: block; font-size: 11px; color: #9fd8f7; letter-spacing: 0.06em; margin-top: 2px; }
+  .kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .kpi { border-radius: 14px; padding: 10px 12px; background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.12); }
+  .kpi b { display: block; font-family: var(--f-display); font-size: 24px; font-weight: 800; line-height: 1.1; }
+  .kpi span { font-size: 12px; color: #c7e4f6; white-space: nowrap; }
+  .kpi b { color: #fff; }
+  .kpi span::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; background: var(--c); }
+  .kpi.done { --c: #7fc3a4; } .kpi.part { --c: #e0bd72; } .kpi.miss { --c: #e39396; }
+  .dash-sub { grid-column: 1 / -1; font-size: 13px; color: #b9daef; }
+  @media (min-width: 760px) { .dash-kpis { grid-template-columns: auto 1fr; grid-template-rows: auto auto; } .ring { grid-row: 1 / 3; } .dash-sub { grid-column: 2; } }
+  @media (max-width: 480px) { .ring { width: 88px; height: 88px; } .ring .num b { font-size: 24px; } .kpi { padding: 8px 10px; } .kpi b { font-size: 20px; } .dash-kpis { gap: 12px; margin-top: 14px; } }
+  .glass-btn:focus:not(:focus-visible), .x-btn:focus:not(:focus-visible) { outline: none; }
+  .dash-kpis > * { min-width: 0; }
+  .kpi-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  @media (max-width: 360px) { .ring { width: 72px; height: 72px; } .ring .num b { font-size: 20px; } .kpi-row { gap: 6px; } .kpi { padding: 6px 8px; } .kpi b { font-size: 18px; } .kpi span { font-size: 11px; } .kpi span::before { margin-right: 4px; } .dash-bar .k { letter-spacing: 0.14em; } }
+
+  .dash-main { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 16px calc(24px + env(safe-area-inset-bottom, 0px)); }
+  .tabs2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
+  .tabs2 button { position: relative; border: 1px solid var(--line); background: #fff; border-radius: 16px; padding: 14px 14px 16px; text-align: left; font: 700 15px/1.25 var(--f-body); color: var(--ink); cursor: pointer; box-shadow: 0 1px 2px rgba(20, 36, 51, 0.04); transition: border-color .25s var(--ease-expo), box-shadow .25s var(--ease-expo), transform .25s var(--ease-expo); }
+  .tabs2 button:hover { box-shadow: 0 10px 24px rgba(20, 36, 51, 0.08); transform: translateY(-1px); }
+  .tabs2 .sn { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sky-ink); margin-bottom: 4px; }
+  .tabs2 .st { display: block; }
+  .tabs2 .sf { display: block; margin-top: 10px; font-size: 12px; font-weight: 600; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .tabs2 .sb { display: block; height: 4px; border-radius: 4px; background: #e3ebf2; margin-top: 6px; overflow: hidden; }
+  .tabs2 .sb i { display: block; height: 100%; background: var(--azure); border-radius: 4px; }
+  .tabs2 button[aria-selected="true"] { border-color: var(--azure); box-shadow: 0 0 0 3px rgba(34, 120, 189, 0.14); }
+  @media (max-width: 560px) { .tabs2 { gap: 6px; } .tabs2 button { padding: 12px 10px 12px; font-size: 13px; } .tabs2 .st { display: none; } .tabs2 .sn { font-size: 13px; letter-spacing: 0.04em; text-transform: none; color: var(--ink); margin: 0; } }
+  .pick-hint { text-align: center; color: var(--ink-3); font-size: 14px; padding: 36px 12px; border: 1px dashed var(--line-2); border-radius: 16px; }
+  .col[hidden], .pick-hint[hidden] { display: none !important; }
+  .col { animation: fade .35s var(--ease-expo); }
+  @media (min-width: 900px) {
+    .dash-main { padding: 22px 28px 28px; }
+    .dash-top { padding: 22px 28px 24px; }
+  }
+  .col-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 2px 4px 8px; }
+  .col-head h3 { font-size: 16px; margin: 0; }
+  .col-head h3 small { display: block; font-family: var(--f-body); font-weight: 600; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sky-ink); margin-bottom: 2px; }
+  .col-head .frac { font-size: 13px; font-weight: 700; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .minibar { display: flex; gap: 3px; height: 6px; margin: 0 4px 12px; }
+  .minibar i { flex: 1; border-radius: 6px; }
+  .it-list { list-style: none; display: grid; gap: 10px; }
+  .it { position: relative; background: #fff; border-radius: 16px; border: 1px solid rgba(20, 36, 51, 0.08); box-shadow: 0 1px 2px rgba(20, 36, 51, 0.04), 0 6px 18px rgba(20, 36, 51, 0.05); overflow: hidden; transition: box-shadow .3s var(--ease-expo), transform .3s var(--ease-expo); }
+  .it:hover { box-shadow: 0 2px 4px rgba(20, 36, 51, 0.05), 0 14px 30px rgba(20, 36, 51, 0.09); }
+  .it-head { width: 100%; display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; text-align: left; border: 0; background: none; padding: 14px 14px 14px 16px; min-height: 58px; font: 600 15px/1.35 var(--f-body); color: var(--ink); cursor: pointer; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--soft); color: var(--cink); white-space: nowrap; }
+  .chip::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--c); }
+  .it-body { display: none; padding: 0 16px 14px 16px; }
+  .it.open .it-body { display: block; animation: fade .35s var(--ease-expo); }
+  @keyframes fade { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  .facts { display: grid; gap: 10px; }
+  .fact { border-radius: 12px; padding: 10px 12px; background: #f4f8fc; font-size: 14px; line-height: 1.55; color: var(--ink-2); }
+  .fact b { display: flex; align-items: center; gap: 8px; min-height: 22px; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 2px; }
+  .fact a.xl { color: var(--azure-deep); font-weight: 600; text-decoration: underline; text-decoration-color: rgba(34, 120, 189, 0.35); text-underline-offset: 3px; }
+  .fact a.xl:hover { text-decoration-color: var(--azure); }
+  .fact.left { background: #fff; border: 1px solid var(--line); color: var(--ink); }
+  .fact .by { margin-top: 6px; font-size: 12px; color: var(--ink-3); }
+  .fact .by strong { font-weight: 600; color: var(--azure-deep); }
+  .view-only { margin: 0 4px 12px; font-size: 13px; color: var(--ink-3); }
+  .ed-cue { display: none; align-items: center; gap: 5px; margin: -6px -6px -6px auto; min-height: 32px; padding: 0 8px; border: 0; border-radius: 8px; background: none; color: var(--ink-3); font: 600 12px/1 var(--f-body); letter-spacing: 0; text-transform: none; cursor: pointer; }
+  .can-edit .ed-cue { display: inline-flex; }
+  .can-edit .fact:not(.editing) { cursor: text; transition: box-shadow .2s var(--ease-expo); }
+  .can-edit .fact:not(.editing):hover { box-shadow: inset 0 0 0 1px var(--line-2); }
+  .can-edit .fact:not(.editing):hover .ed-cue, .ed-cue:focus-visible { color: var(--azure-deep); background: var(--azure-soft); }
+  .ed-cue:focus-visible { outline: 2px solid var(--azure); outline-offset: 1px; }
+  .fact.editing { background: #fff; box-shadow: 0 0 0 2px var(--azure); }
+  .fact.editing .ed-cue { display: none; }
+  .fact .fx { overflow-wrap: anywhere; }
+  .fact .fx[contenteditable] { outline: none; min-height: 1.55em; }
+  .ed-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
+  .ed-bar .hint { flex: 1; font-size: 12px; color: var(--ink-3); }
+  .ed-bar button { min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--line-2); background: #fff; color: var(--ink-2); font: 600 13px/1 var(--f-body); cursor: pointer; }
+  .ed-bar button.save { border-color: transparent; background: var(--azure); color: #fff; }
+  .ed-bar button.restore { border-color: transparent; background: none; color: var(--azure-deep); padding: 0 6px; }
+  .ed-bar button:focus-visible { outline: 2px solid var(--azure); outline-offset: 1px; }
+  @media (max-width: 520px) { .ed-bar .hint { display: none; } .ed-bar { justify-content: flex-end; } }
+  .ed-err { margin-top: 6px; font-size: 12px; color: var(--miss); }
+  .it-foot { display: flex; align-items: center; justify-content: flex-end; margin-top: 10px; }
+  .note-btn { display: none; align-items: center; gap: 8px; min-height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line-2); background: #fff; color: var(--azure-deep); font: 600 13px/1 var(--f-body); cursor: pointer; }
+  .note-btn .cnt { background: var(--azure); color: #fff; border-radius: 999px; font-size: 11px; font-weight: 800; padding: 2px 7px; }
+  .it .pin { position: absolute; top: 10px; right: 10px; }
+  .dash-note { text-align: center; font-size: 12px; color: var(--ink-3); margin-top: 18px; }
+
+  /* notes sheet */
+  dialog.notes { border: 0; padding: 0; width: 100%; max-width: 560px; max-height: 88dvh; margin: auto auto 0; border-radius: 22px 22px 0 0; background: #fff; color: var(--ink); box-shadow: 0 -20px 60px rgba(8, 28, 44, 0.35); overflow: hidden; }
+  @media (min-width: 760px) { dialog.notes { margin: auto; border-radius: 20px; max-height: 80vh; } }
+  dialog.notes::backdrop { background: rgba(8, 24, 38, 0.45); }
+  dialog.notes[open] { animation: dash-in .45s var(--ease-expo); }
+  .notes-shell { display: flex; flex-direction: column; max-height: inherit; }
+  .notes-head { padding: 18px 18px 12px; border-bottom: 1px solid var(--line); display: flex; gap: 12px; align-items: flex-start; }
+  .notes-head .k { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sky-ink); }
+  .notes-head h3 { margin: 2px 0 0; font-size: 18px; }
+  .x-btn { margin-left: auto; width: 44px; height: 44px; flex: none; border-radius: 50%; border: 0; background: #eef4fa; color: var(--ink-2); font-size: 22px; cursor: pointer; }
+  .notes-list { list-style: none; overflow-y: auto; padding: 12px 18px; display: grid; gap: 10px; flex: 1; }
+  .note { border-radius: 14px; background: #f4f8fc; padding: 12px 14px; }
+  .note.resolved { opacity: .6; }
+  .note .meta2 { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 12px; color: var(--ink-3); margin-bottom: 4px; }
+  .note .meta2 .tagx { font-weight: 700; color: var(--azure-deep); }
+  .note p { font-size: 15px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .note .acts { display: flex; gap: 8px; margin-top: 8px; }
+  .note .acts button { min-height: 36px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--line-2); background: #fff; font: 600 12px/1 var(--f-body); color: var(--ink-2); cursor: pointer; }
+  .note .acts button.del.arm { background: var(--s-miss-soft); color: var(--s-miss-ink); border-color: transparent; }
+  .empty { text-align: center; color: var(--ink-3); font-size: 14px; padding: 18px 0; }
+  .composer { border-top: 1px solid var(--line); padding: 12px 18px calc(14px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 8px; }
+  .composer select, .composer textarea { width: 100%; font: 16px/1.45 var(--f-body); color: var(--ink); border: 1px solid var(--line-2); border-radius: 12px; padding: 10px 12px; background: #fff; }
+  .composer textarea { min-height: 84px; resize: vertical; }
+  .composer textarea:focus, .composer select:focus { outline: 2px solid var(--azure); outline-offset: 1px; }
+  .composer .row { display: flex; align-items: center; gap: 10px; }
+  .composer .hint { font-size: 12px; color: var(--ink-3); flex: 1; }
+  .composer .save { min-height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: var(--azure); color: #fff; font: 700 14px/1 var(--f-body); cursor: pointer; }
+  .composer .save:disabled { opacity: .5; cursor: default; }
+  @media (prefers-reduced-motion: reduce) { .dash-top::before, .dash-top::after { animation: none; } dialog.dash[open], dialog.notes[open], .it.open .it-body { animation: none; } }
+</style>
+
+
+<button class="toc-fab" id="toc-fab" type="button" aria-expanded="false" aria-controls="toc-panel">
+  <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3.5h12M2 8h12M2 12.5h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+  Contents<span class="cur" id="toc-cur"></span>
+</button>
+<nav class="toc-panel" id="toc-panel" aria-label="Page contents" hidden>
+  <div class="toc-head"><b>Contents</b><button type="button" id="toc-x" aria-label="Close contents">&times;</button></div>
+  <ul class="toc-list" id="toc-list"></ul>
+</nav>
+<script>
+(function () {
+  var fab = document.getElementById("toc-fab"), panel = document.getElementById("toc-panel"), list = document.getElementById("toc-list");
+  function txt(el) { return el ? el.textContent.replace(/\s+/g, " ").trim() : ""; }
+  function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+  function label(card) {
+    var when = card.querySelector(".when"), num = card.querySelector(".num"), lab = card.querySelector(".label"), h = card.querySelector("h3");
+    if (when) return txt(when).split(" · ")[0] + ": " + txt(h);
+    if (num) return txt(num).replace(/^\d+\s*·\s*/, "");
+    if (lab && !h) return txt(lab).split(" · ")[0];
+    return txt(h);
+  }
+  // Built from the page's headings, so a new card or section shows up here without editing this list.
+  var groups = [], n = 0;
+  document.querySelectorAll("main section[id], #plan-30").forEach(function (sec) {
+    var title = sec.id === "plan-30" ? txt(sec.querySelector(".eyebrow")) : txt(sec.querySelector("h2")), kids = [];
+    [].forEach.call(sec.children, function (el) {
+      var isCard = el.classList.contains("card"), isH3 = el.tagName === "H3";
+      if (!isCard && !isH3) return;
+      var t = isH3 ? txt(el) : label(el);
+      if (!t) return;
+      if (!el.id) el.id = "sec-" + (++n);
+      kids.push({ el: el, t: t });
+    });
+    groups.push({ el: sec, t: title, kids: kids.length > 1 ? kids : [] });
+  });
+  list.innerHTML = '<li class="g"><a href="#dashboard" class="dash-link" data-dash>Open project dashboard</a></li>' + groups.map(function (g) {
+    return '<li class="g"><a href="#' + g.el.id + '">' + esc(g.t) + '</a>' + (g.kids.length ? '<ul>' + g.kids.map(function (k) {
+      return '<li><a href="#' + k.el.id + '">' + esc(k.t) + '</a></li>';
+    }).join("") + '</ul>' : "") + '</li>';
+  }).join("");
+  var links = [].slice.call(list.querySelectorAll("a:not([data-dash])"));
+  var targets = links.map(function (a) { return document.getElementById(a.getAttribute("href").slice(1)); });
+
+  function setOpen(open) {
+    panel.hidden = !open;
+    fab.setAttribute("aria-expanded", open ? "true" : "false");
+    if (open) {
+      var c = list.querySelector('[aria-current="true"]');
+      if (c) c.scrollIntoView({ block: "nearest" });
+      (c || list.querySelector("a")).focus({ preventScroll: true });
+    }
+  }
+  fab.addEventListener("click", function () { setOpen(panel.hidden); });
+  document.getElementById("toc-x").addEventListener("click", function () { setOpen(false); fab.focus(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !panel.hidden) { setOpen(false); fab.focus(); } });
+  document.addEventListener("click", function (e) { if (!panel.hidden && !panel.contains(e.target) && !fab.contains(e.target)) setOpen(false); });
+  list.addEventListener("click", function (e) {
+    var a = e.target.closest("a");
+    if (!a) return;
+    e.preventDefault();
+    setOpen(false);
+    if (a.hasAttribute("data-dash")) { var b = document.querySelector("[data-open-dash]"); if (b) b.click(); return; }
+    var t = document.getElementById(a.getAttribute("href").slice(1));
+    if (!t) return;
+    t.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    t.setAttribute("tabindex", "-1");
+    t.focus({ preventScroll: true });
+  });
+
+  // Highlights the last heading that has scrolled up past the sticky jump bar.
+  var ticking = false, cur = document.getElementById("toc-cur");
+  function spy() {
+    ticking = false;
+    var idx = -1;
+    targets.forEach(function (t, i) { if (t && t.getBoundingClientRect().top <= 110) idx = i; });
+    links.forEach(function (a, i) { a.setAttribute("aria-current", i === idx ? "true" : "false"); });
+    cur.textContent = idx >= 0 ? links[idx].closest(".g").firstChild.textContent : "";
+  }
+  window.addEventListener("scroll", function () { if (!ticking) { ticking = true; requestAnimationFrame(spy); } }, { passive: true });
+  spy();
+})();
+</script>
+
+<dialog class="dash" id="dash" aria-labelledby="dash-title">
+  <div class="dash-shell">
+    <div class="dash-top">
+      <div class="dash-bar">
+        <div>
+          <div class="k">Module 4 checkpoint</div>
+          <h2 id="dash-title">Project dashboard</h2>
+        </div>
+        <div class="spacer"></div>
+        <button class="glass-btn" id="all-notes" type="button" hidden>Notes <span class="badge" id="notes-badge" hidden>0</span></button>
+        <button class="glass-btn icon" id="dash-x" type="button" aria-label="Close dashboard">&times;</button>
+      </div>
+      <div class="dash-kpis">
+        <div class="ring" id="ring"></div>
+        <div class="kpi-row" id="kpis"></div>
+        <div class="dash-sub" id="dash-sub"></div>
+      </div>
+    </div>
+    <div class="dash-main">
+      <div class="tabs2" role="tablist" id="tabs2"></div>
+      <div class="pick-hint" id="pick-hint">Pick a step above to see its checklist.</div>
+      <div class="view-only" id="view-only" hidden>You can view this dashboard. To edit it, ask Gabriel for edit access.</div>
+      <div class="cols" id="cols"></div>
+      <div class="dash-note">Tap an item for what we have and what is left. This is the read-only copy; Gabriel updates it with each status check.</div>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="notes" id="notes" aria-labelledby="notes-title">
+  <div class="notes-shell">
+    <div class="notes-head">
+      <div><div class="k" id="notes-k">Notes</div><h3 id="notes-title">All notes</h3></div>
+      <button class="x-btn" id="notes-x" type="button" aria-label="Close notes">&times;</button>
+    </div>
+    <ul class="notes-list" id="notes-list"></ul>
+    <form class="composer" id="composer">
+      <select id="note-item" aria-label="What this note is about"></select>
+      <textarea id="note-text" placeholder="Add a note for the team or for Claude..." aria-label="Note"></textarea>
+      <div class="row"><span class="hint" id="note-hint"></span><button class="save" id="note-save" type="submit">Add note</button></div>
+    </form>
+  </div>
+</dialog>
+
+<script>
+(function () {
+  var ST = {
+    done: { label: "Done", c: "var(--s-done)", soft: "var(--s-done-soft)", ink: "var(--s-done-ink)" },
+    part: { label: "Partial", c: "var(--s-part)", soft: "var(--s-part-soft)", ink: "var(--s-part-ink)" },
+    miss: { label: "Missing", c: "var(--s-miss)", soft: "var(--s-miss-soft)", ink: "var(--s-miss-ink)" }
+  };
+  // Checklist status is maintained by Claude in this source; notes live in the page's database.
+  var STEPS = [
+    { name: "Step 1", title: "Product framing and scope", items: [
+      ["s1-1", "Career pathway selected and documented", "done", "Data Engineer, stated on the [[Home|https://gheydt.github.io/ad688group3.github.io/index.html]] and [[Project Overview|https://gheydt.github.io/ad688group3.github.io/introduction.html]] pages.", "Nothing."],
+      ["s1-2", "NAICS code selected and justified", "done", "Code 5241 (insurance carriers) is used in every filter and is now named on [[Data Preparation|https://gheydt.github.io/ad688group3.github.io/data_preparation.html]] and [[Career Evaluation|https://gheydt.github.io/ad688group3.github.io/career_evaluation.html]], which also explains why insurance.", "Nothing."],
+      ["s1-3", "Project question clearly stated", "done", "\"What skills make someone the most qualified for a Data Engineer role in insurance?\" on [[Home|https://gheydt.github.io/ad688group3.github.io/index.html]] and [[Project Overview|https://gheydt.github.io/ad688group3.github.io/introduction.html]].", "Nothing."],
+      ["s1-4", "Website structure and rationale page", "done", "Our team site is live with 8 tabs, and [[Project Overview|https://gheydt.github.io/ad688group3.github.io/introduction.html]] explains why the topic matters.", "Nothing here. The empty tabs are counted under Step 3."],
+      ["s1-5", "Literature review and references", "part", "Three source links on [[Project Overview|https://gheydt.github.io/ad688group3.github.io/introduction.html]] and five on [[Career Evaluation|https://gheydt.github.io/ad688group3.github.io/career_evaluation.html]].", "A short summary of what each source says and how it shaped our question, cited in APA style as the syllabus requires."]
+    ]},
+    { name: "Step 2", title: "Data preparation and market baseline", items: [
+      ["s2-1", "Filtered dataset for our pathway and industry", "done", "Old data: 1,895 insurance posts cut to 27 data roles. 2024 data: 1,908 insurance posts cut to 29 engineer roles. Both are saved in the repo.", "Nothing, but the two versions should become one."],
+      ["s2-2", "Cleaning pipeline documented", "part", "The [[Data Preparation|https://gheydt.github.io/ad688group3.github.io/data_preparation.html]] page now covers the industry filter, the job titles we matched, the fields we kept, and how duplicates and missing values were handled. The full steps are in the [[Step 2 notebook|https://github.com/gheydt/ad688group3.github.io/blob/main/notebooks/step2_pyspark_filter_insurance.ipynb]].", "The bullet lists on that page run together into one long line. Adding a blank line before each list fixes it."],
+      ["s2-3", "Market baseline page complete", "done", "Job volume, salary, location, experience, remote work, top employers, skills, and limitations are all covered.", "The [[Market Baseline|https://gheydt.github.io/ad688group3.github.io/market_baseline.html]] page is built on the old dataset. Rerun it on the 2024 data."],
+      ["s2-4", "Salary, location, experience, remote charted", "part", "Charts for remote work and top skills on the [[Market Baseline|https://gheydt.github.io/ad688group3.github.io/market_baseline.html]] page.", "Salary and location are plain text tables, and experience is marked unavailable. The 2024 data has salary on 13 of 29 roles and experience on 22, so all four charts become possible."]
+    ]},
+    { name: "Step 3", title: "Career evaluation and skill gap", items: [
+      ["s3-1", "Skill-gap analysis completed", "done", "On the [[Skill Gap Analysis|https://gheydt.github.io/ad688group3.github.io/skill_gap_analysis.html]] page: our 1 to 5 ratings on 10 skills compared with how often 29 job posts ask for each. Biggest gaps: cloud, Python, Git, Spark.", "Nothing."],
+      ["s3-2", "Benchmark table or scorecard", "done", "A table showing team average, market demand, gap, and priority for every skill.", "Nothing."],
+      ["s3-3", "Recommendations draft added", "miss", "Nothing yet. The [[Final Recommendations|https://gheydt.github.io/ad688group3.github.io/final_recommendations.html]] tab is empty.", "A draft upskilling plan: which skill each of us learns first, which course or resource, and how we cover for each other. Step 3 asked for this."],
+      ["s3-4", "Website readable and logical", "part", "A clear 8-tab menu in project order on our [[team site|https://gheydt.github.io/ad688group3.github.io/index.html]].", "Two tabs are still empty ([[Predictive Modeling|https://gheydt.github.io/ad688group3.github.io/ml_methods.html]], [[Final Recommendations|https://gheydt.github.io/ad688group3.github.io/final_recommendations.html]]). The menu says Exploratory Analysis but [[that page|https://gheydt.github.io/ad688group3.github.io/market_baseline.html]] is titled Market Baseline."]
+    ]}
+  ];
+  var CHECKED = "Checked Sep 29, 2026 against the team site and repo";
+
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+  function linkify(s) { return esc(s).replace(/\[\[(.+?)\|(https:\/\/[^\]\s]+)\]\]/g, '<a class="xl" href="$2" target="_blank" rel="noopener">$1</a>'); }
+  var ALL = [], TITLE = { general: "General" }, BYID = {};
+  STEPS.forEach(function (s) { s.items.forEach(function (it) { ALL.push(it); TITLE[it[0]] = it[1]; BYID[it[0]] = it; }); });
+  var n = { done: 0, part: 0, miss: 0 };
+  ALL.forEach(function (it) { n[it[2]]++; });
+
+  // progress ring
+  (function () {
+    var r = 42, C = 2 * Math.PI * r, len = C * n.done / ALL.length;
+    var segs = '<circle cx="52" cy="52" r="' + r + '" fill="none" stroke="#8ec8ee" stroke-width="9" stroke-linecap="round" stroke-dasharray="' + len + " " + (C - len) + '"/>';
+    $("ring").innerHTML = '<svg viewBox="0 0 104 104" aria-hidden="true"><circle cx="52" cy="52" r="' + r + '" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="9"/>' + segs + '</svg>' +
+      '<div class="num"><div><b>' + n.done + '/' + ALL.length + '</b><span>DONE</span></div></div>';
+    $("kpis").innerHTML = ["done", "part", "miss"].map(function (k) {
+      return '<div class="kpi ' + k + '"><b>' + n[k] + '</b><span>' + (k === "done" ? "done" : k === "part" ? "partial" : "missing") + '</span></div>';
+    }).join("");
+    $("dash-sub").textContent = "Due Oct 7 · no points, but it sets up the graded report and presentation · " + CHECKED;
+  })();
+
+  // in-place edits of "What we have" / "What is left": saved to db collection "edits", they override STEPS
+  var F = { have: [3, "What we have"], left: [4, "What is left"] }, EDITS = {}, cur = null, escAt = 0;
+  // EDITS[key] = { text, by, at }; `by` is a viewer id (or "claude"), resolved to a name at render time.
+  var who = null, ME = null, NAMES = { claude: "Claude" };
+  function when(iso) { try { return new Date(iso).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); } catch (e) { return ""; } }
+  function byline(e) {
+    return '<div class="by">Updated by <strong>' + esc(e.by === ME ? "you" : NAMES[e.by] || "a teammate") + '</strong>' + (e.at ? ' · ' + when(e.at) : "") + '</div>';
+  }
+  function resolveNames() {
+    if (!who) return;
+    var ids = []; Object.keys(EDITS).forEach(function (k) { var b = EDITS[k].by; if (b && b !== "claude" && ids.indexOf(b) < 0) ids.push(b); });
+    if (!ids.length) return;
+    who.profiles(ids).then(function (ps) {
+      var changed = false;
+      ids.forEach(function (id) { var nm = ps[id] && ps[id].name; if (nm && NAMES[id] !== nm) { NAMES[id] = nm; changed = true; } });
+      if (changed) repaintAll();
+    });
+  }
+  function repaintAll() { document.querySelectorAll("#cols .fact").forEach(function (fa) { if (!cur || cur.fa !== fa) paintFact(fa); }); }
+  var PEN = '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M11.3 1.7a1.5 1.5 0 0 1 2.1 0l.9.9a1.5 1.5 0 0 1 0 2.1L5.5 13.5 2 14l.5-3.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+  function srcOf(id, f) { return BYID[id][F[f][0]]; }
+  function valOf(id, f) { var e = EDITS[id + "-" + f]; return e ? e.text : srcOf(id, f); }
+  function factInner(id, f) {
+    var e = EDITS[id + "-" + f];
+    return '<b><span>' + F[f][1] + '</span>' +
+      '<button type="button" class="ed-cue" aria-label="Edit ' + F[f][1].toLowerCase() + ': ' + esc(TITLE[id]) + '">' + PEN + 'Edit</button></b>' +
+      '<div class="fx">' + linkify(valOf(id, f)) + '</div>' + (e ? byline(e) : "");
+  }
+  function factBox(it, f) { return '<div class="fact' + (f === "left" ? " left" : "") + '" data-f="' + f + '">' + factInner(it[0], f) + '</div>'; }
+  function paintFact(fa, err) {
+    fa.classList.remove("editing");
+    fa.innerHTML = factInner(fa.closest(".it").dataset.id, fa.dataset.f) + (err ? '<div class="ed-err">' + err + '</div>' : "");
+  }
+  // Serializes the edited box back to the STEPS text format, keeping links as [[Label|url]].
+  function toSrc(node) {
+    var out = "";
+    [].forEach.call(node.childNodes, function (n) {
+      if (n.nodeType === 3) out += n.nodeValue;
+      else if (n.nodeType !== 1) return;
+      else if (n.nodeName === "A" && /^https:\/\//.test(n.getAttribute("href") || "")) {
+        var t = n.textContent.replace(/[|\[\]]/g, "").trim();
+        if (t) out += "[[" + t + "|" + n.getAttribute("href") + "]]";
+      }
+      else if (n.nodeName === "BR") out += " ";
+      else out += /^(DIV|P|LI)$/.test(n.nodeName) ? " " + toSrc(n) + " " : toSrc(n);
+    });
+    return out;
+  }
+  function caretAt(x, y) {
+    if (document.caretRangeFromPoint) return document.caretRangeFromPoint(x, y);
+    if (document.caretPositionFromPoint) { var p = document.caretPositionFromPoint(x, y); if (p) { var r = document.createRange(); r.setStart(p.offsetNode, p.offset); return r; } }
+    return null;
+  }
+  function openEd(fa, x, y) {
+    if (cur) commit();
+    var fx = fa.querySelector(".fx"), id = fa.closest(".it").dataset.id, f = fa.dataset.f;
+    [].forEach.call(fa.querySelectorAll(".ed-err, .by"), function (n) { n.remove(); });
+    cur = { fa: fa, fx: fx, id: id, f: f };
+    fa.classList.add("editing");
+    fx.setAttribute("contenteditable", "true"); fx.setAttribute("role", "textbox"); fx.setAttribute("aria-label", F[f][1] + ": " + TITLE[id]);
+    var bar = document.createElement("div"); bar.className = "ed-bar";
+    bar.innerHTML = '<span class="hint">Enter saves, Esc cancels</span>' +
+      (valOf(id, f) !== srcOf(id, f) ? '<button type="button" class="restore" data-ed="restore">Restore original</button>' : "") +
+      '<button type="button" data-ed="cancel">Cancel</button><button type="button" class="save" data-ed="save">Save</button>';
+    fa.appendChild(bar);
+    fx.focus();
+    var r = x != null ? caretAt(x, y) : null, s = window.getSelection();
+    if (!r || !fx.contains(r.startContainer)) { r = document.createRange(); r.selectNodeContents(fx); r.collapse(false); }
+    s.removeAllRanges(); s.addRange(r);
+  }
+  function commit() {
+    var c = cur; if (!c) return;
+    cur = null;
+    var text = toSrc(c.fx).replace(/\s+/g, " ").trim();
+    if (!text || text === valOf(c.id, c.f)) { paintFact(c.fa); return; }
+    write(c.fa, c.id, c.f, text);
+  }
+  function cancelEd() { var c = cur; if (!c) return; cur = null; paintFact(c.fa); }
+  // Restoring is itself a change, so it is saved and credited like any other edit.
+  function restoreEd() { var c = cur; if (!c) return; cur = null; write(c.fa, c.id, c.f, srcOf(c.id, c.f)); }
+  function write(fa, id, f, text) {
+    var k = id + "-" + f, before = EDITS[k], at = new Date().toISOString();
+    EDITS[k] = { text: text, by: ME, at: at };
+    paintFact(fa);
+    db.collection("edits").doc(k).set({ item: id, itemTitle: TITLE[id], field: f, text: text, base: srcOf(id, f), updatedBy: ME, updatedAt: at })
+      .catch(function (e) {
+        if (before) EDITS[k] = before; else delete EDITS[k];
+        if (!cur || cur.fa !== fa) paintFact(fa, e && e.code === "quota_exceeded" ? "The page's storage is full, so this edit did not save." : "That edit did not save. Check your connection, or ask Gabriel for edit access to this page.");
+      });
+  }
+
+  // columns + tabs
+  var noteCounts = {};
+  function renderCols() {
+    $("cols").innerHTML = STEPS.map(function (s, ix) {
+      var d = s.items.filter(function (i) { return i[2] === "done"; }).length;
+      return '<section class="col" data-ix="' + ix + '"><div class="col-head"><h3><small>' + s.name + '</small>' + esc(s.title) + '</h3><span class="frac">' + d + ' of ' + s.items.length + '</span></div>' +
+                '<ul class="it-list">' + s.items.map(function (it) {
+          var st = ST[it[2]], c = noteCounts[it[0]] || 0;
+          return '<li class="it" data-id="' + it[0] + '" style="--c:' + st.c + ';--soft:' + st.soft + ';--cink:' + st.ink + '">' +
+            '<button class="it-head" type="button" aria-expanded="false"><span>' + esc(it[1]) + '</span><span class="chip">' + st.label + '</span></button>' +
+            '<div class="it-body"><div class="facts">' + factBox(it, "have") + factBox(it, "left") + '</div>' +
+            '<div class="it-foot"><button class="note-btn" type="button" data-note="' + it[0] + '">Notes' + (c ? ' <span class="cnt">' + c + '</span>' : ' +') + '</button></div></div></li>';
+        }).join("") + '</ul></section>';
+    }).join("");
+    showTab(curTab);
+  }
+  var curTab = -1;
+  function showTab(ix) {
+    curTab = ix;
+    $("pick-hint").hidden = ix >= 0;
+    [].forEach.call($("tabs2").children, function (b, j) { b.setAttribute("aria-selected", j === ix ? "true" : "false"); });
+    [].forEach.call($("cols").children, function (c, j) { c.hidden = j !== ix; });
+  }
+  $("tabs2").innerHTML = STEPS.map(function (s, ix) {
+    var d = s.items.filter(function (i) { return i[2] === "done"; }).length;
+    return '<button type="button" role="tab" data-ix="' + ix + '"><span class="sn">' + s.name + '</span><span class="st">' + esc(s.title) + '</span><span class="sf">' + d + ' of ' + s.items.length + ' done</span><span class="sb"><i style="width:' + Math.round(100 * d / s.items.length) + '%"></i></span></button>';
+  }).join("");
+  $("tabs2").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) showTab(curTab === +b.dataset.ix ? -1 : +b.dataset.ix); });
+  $("cols").addEventListener("click", function (e) {
+    var nb = e.target.closest(".note-btn"); if (nb) { openNotes(nb.dataset.note); return; }
+    var eb = e.target.closest("[data-ed]");
+    if (eb) { if (eb.dataset.ed === "save") commit(); else if (eb.dataset.ed === "cancel") cancelEd(); else restoreEd(); return; }
+    var fa = e.target.closest(".fact");
+    if (fa) {
+      if (db && $("cols").classList.contains("can-edit") && !fa.classList.contains("editing") && !e.target.closest("a.xl")) { if (e.target.closest(".ed-cue")) openEd(fa); else openEd(fa, e.clientX, e.clientY); }
+      return;
+    }
+    var h = e.target.closest(".it-head"); if (!h) return;
+    var li = h.parentNode, open = !li.classList.contains("open");
+    li.parentNode.querySelectorAll(".it.open").forEach(function (x) { x.classList.remove("open"); x.firstChild.setAttribute("aria-expanded", "false"); });
+    if (open) { li.classList.add("open"); h.setAttribute("aria-expanded", "true"); }
+  });
+  // Keeps focus in the editor so Cancel/Restore are not preempted by the blur-to-save below.
+  $("cols").addEventListener("mousedown", function (e) { if (e.target.closest("[data-ed]")) e.preventDefault(); });
+  $("cols").addEventListener("keydown", function (e) {
+    if (!cur || !cur.fx.contains(e.target)) return;
+    if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); commit(); }
+    else if (e.key === "Escape") { e.preventDefault(); escAt = Date.now(); cancelEd(); }
+  });
+  $("cols").addEventListener("paste", function (e) {
+    if (!cur || !cur.fx.contains(e.target)) return;
+    e.preventDefault();
+    var t = (e.clipboardData ? e.clipboardData.getData("text/plain") : "").replace(/\s+/g, " ");
+    if (t && !document.execCommand("insertText", false, t)) {
+      var s = window.getSelection(); if (!s.rangeCount) return;
+      var r = s.getRangeAt(0), tn = document.createTextNode(t); r.deleteContents(); r.insertNode(tn); r.setStartAfter(tn); r.collapse(true); s.removeAllRanges(); s.addRange(r);
+    }
+  });
+  // Clicking away saves; leaving the page (another app, the claude.ai frame) keeps the editor open.
+  $("cols").addEventListener("focusout", function (e) {
+    if (!cur || e.target !== cur.fx || (e.relatedTarget && cur.fa.contains(e.relatedTarget))) return;
+    setTimeout(function () { if (cur && document.hasFocus() && !cur.fa.contains(document.activeElement)) commit(); }, 0);
+  });
+  renderCols();
+
+  var dash = $("dash");
+  // Esc inside the editor cancels the edit, not the whole dashboard.
+  dash.addEventListener("cancel", function (e) { if (cur || Date.now() - escAt < 300) e.preventDefault(); });
+  function openDash() { if (!dash.open) { dash.showModal(); if (document.activeElement) document.activeElement.blur(); } }
+  document.querySelectorAll("[data-open-dash]").forEach(function (b) { b.addEventListener("click", openDash); });
+  $("dash-x").addEventListener("click", function () { dash.close(); });
+  if (location.hash === "#dashboard") openDash();
+
+  // notes (db)
+  var notesDlg = $("notes"), sel = $("note-item"), db = null, notes = [], scope = "all", armed = null;
+  sel.innerHTML = '<option value="general">General note</option>' + STEPS.map(function (s) {
+    return '<optgroup label="' + s.name + '">' + s.items.map(function (it) { return '<option value="' + it[0] + '">' + esc(it[1]) + '</option>'; }).join("") + '</optgroup>';
+  }).join("");
+  function fmt(iso) { try { return new Date(iso).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); } catch (e) { return ""; } }
+  function renderNotes() {
+    var list = notes.filter(function (x) { return scope === "all" || x.item === scope; });
+    $("notes-list").innerHTML = list.length ? list.map(function (x) {
+      return '<li class="note' + (x.status === "resolved" ? " resolved" : "") + '" data-id="' + esc(x.id) + '"><div class="meta2">' +
+        (scope === "all" ? '<span class="tagx">' + esc(TITLE[x.item] || "General") + '</span>' : "") + '<span>' + fmt(x.createdAt) + '</span>' +
+        (x.status === "resolved" ? '<span>Resolved</span>' : "") + '</div><p>' + esc(x.text) + '</p><div class="acts">' +
+        '<button type="button" data-act="toggle">' + (x.status === "resolved" ? "Reopen" : "Mark resolved") + '</button>' +
+        '<button type="button" class="del' + (armed === x.id ? " arm" : "") + '" data-act="del">' + (armed === x.id ? "Tap again to delete" : "Delete") + '</button></div></li>';
+    }).join("") : '<li class="empty">' + (db ? "No notes yet." : "Notes save once this page is open on claude.ai.") + '</li>';
+    var open = notes.filter(function (x) { return x.status !== "resolved"; });
+    $("notes-badge").hidden = !open.length; $("notes-badge").textContent = open.length;
+    noteCounts = {}; notes.forEach(function (x) { noteCounts[x.item] = (noteCounts[x.item] || 0) + 1; });
+    document.querySelectorAll(".note-btn").forEach(function (b) { var c = noteCounts[b.dataset.note] || 0; b.innerHTML = "Notes" + (c ? ' <span class="cnt">' + c + '</span>' : " +"); });
+  }
+  function openNotes(item) {
+    scope = item || "all"; armed = null;
+    $("notes-k").textContent = item ? "Notes on" : "Notes";
+    $("notes-title").textContent = item ? TITLE[item] : "All notes";
+    sel.hidden = !!item; sel.value = item || "general";
+    renderNotes(); notesDlg.showModal();
+  }
+  $("all-notes").addEventListener("click", function () { openNotes(null); });
+  $("notes-x").addEventListener("click", function () { notesDlg.close(); });
+  $("notes-list").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-act]"); if (!b || !db) return;
+    var id = b.closest(".note").dataset.id, x = notes.filter(function (y) { return y.id === id; })[0]; if (!x) return;
+    if (b.dataset.act === "toggle") { db.collection("notes").doc(id).update({ status: x.status === "resolved" ? "open" : "resolved" }).catch(showErr); }
+    else if (armed === id) { armed = null; db.collection("notes").doc(id).delete().catch(showErr); }
+    else { armed = id; renderNotes(); }
+  });
+  function showErr(e) { $("note-hint").textContent = e && e.code === "quota_exceeded" ? "The notes store is full. Delete a few old notes, then try again." : "That did not save. Check your connection and try again."; }
+  $("composer").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var text = $("note-text").value.trim(); if (!text || !db) return;
+    var item = scope === "all" ? sel.value : scope;
+    $("note-save").disabled = true;
+    db.collection("notes").add({ item: item, itemTitle: TITLE[item] || "General", text: text, status: "open", createdAt: new Date().toISOString() })
+      .then(function () { $("note-text").value = ""; $("note-hint").textContent = "Saved."; })
+      .catch(showErr)
+      .then(function () { $("note-save").disabled = !db; });
+  });
+  $("note-hint").textContent = "Connecting...";
+  $("note-save").disabled = true;
+  (window.claude && window.claude.use ? window.claude.use("db") : Promise.resolve(null)).then(function (d) {
+    db = d;
+    if (!db) { $("note-hint").textContent = "Notes save once this page is open on claude.ai."; renderNotes(); return; }
+    $("note-hint").textContent = ""; $("note-save").disabled = false;
+    db.collection("edits").onSnapshot(function (snap) {
+      EDITS = {};
+      snap.docs.forEach(function (d) { var v = d.data(); if (v && typeof v.text === "string" && BYID[v.item] && F[v.field]) EDITS[v.item + "-" + v.field] = { text: v.text, by: v.updatedBy || null, at: v.updatedAt || "" }; });
+      repaintAll(); resolveNames();
+    }, function () {});
+    (window.claude.use("user") || Promise.resolve(null)).then(function (u) {
+      who = u; if (!u) { $("cols").classList.add("can-edit"); return; }
+      return Promise.all([u.id(), u.can("data.write")]).then(function (r) {
+        ME = r[0];
+        // null means the platform did not say; offer editing and let a refused write explain itself.
+        if (r[1] !== false) $("cols").classList.add("can-edit"); else $("view-only").hidden = false;
+        repaintAll(); resolveNames();
+      });
+    }).catch(function () { $("cols").classList.add("can-edit"); });
+    db.collection("notes").orderBy("createdAt", "desc").onSnapshot(function (snap) {
+      notes = snap.docs.map(function (d) { var v = d.data(); return { id: d.id, item: v.item, text: v.text, status: v.status, createdAt: v.createdAt }; });
+      renderNotes();
+    }, function () { $("note-hint").textContent = "Notes stopped syncing. Reload the page."; });
+  }).catch(function () { renderNotes(); });
+  renderNotes();
+})();
+</script>
+
+</body>
+</html>
