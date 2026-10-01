@@ -15,7 +15,12 @@
      Gabriel's notes live in the artifact database collection "notes". His in-page rewrites of
      "What we have" / "What is left" (his and his classmates') live in collection "edits" (doc id
      <item>-have|left, updatedBy = viewer id or "claude"). An edit doc overrides STEPS and is kept,
-     so the page can show who updated each box last. -->
+     so the page can show who updated each box last. Status changes made by tapping a status chip live in
+     collection "statuses" (doc id = item id; overrides the status in STEPS the same way). Every status
+     change and every description save also appends a doc to collection "changes" (item, itemTitle,
+     kind status|description, field, from, to, by, at); the entry banner and Updates sheet read it.
+     Each viewer's last-seen time lives in their private data/users/<id>/dashboard doc. None of these
+     docs is ever deleted. -->
 <style>
   :root {
     color-scheme: light;
@@ -237,6 +242,9 @@
   footer { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
   @media (prefers-reduced-motion: reduce) { .toc-panel { animation: none; } }
 </style>
+<div class="upd-top none" id="upd-top"><div class="wrap">
+  <button class="upd-banner" type="button" data-upd-new hidden><span class="ub-n"></span><span><b class="ub-t"></b><span class="ub-s"></span></span><span class="ub-go">See what changed</span></button>
+</div></div>
 <header class="hero">
   <div class="wrap">
     <div class="kicker">AD688 · Group 3</div>
@@ -248,7 +256,9 @@
         <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="10" y="2" width="6" height="6" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="2" y="10" width="6" height="6" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="currentColor"/></svg>
         Open project dashboard
       </button>
+      <button class="btn ghost upd-open" type="button" data-upd-all hidden>Recent checklist updates <span class="badge" hidden>0</span></button>
       <div class="note">The professor's checkpoint, final build, and presentation instructions are on Blackboard under Modules 4, 5, and 6.</div>
+      <button class="btn ghost diff-open" type="button" data-diff-open>Project Difference Analysis</button>
     </div>
 
     <div class="tldr">
@@ -257,9 +267,9 @@
     </div>
 
     <div class="stats">
-      <div class="stat ok"><b>8</b><span>checkpoint items done</span></div>
-      <div class="stat part"><b>4</b><span>partly done</span></div>
-      <div class="stat no"><b>1</b><span>not started</span></div>
+      <div class="stat ok"><b id="stat-done">8</b><span>checkpoint items done</span></div>
+      <div class="stat part"><b id="stat-part">4</b><span>partly done</span></div>
+      <div class="stat no"><b id="stat-miss">1</b><span>not started</span></div>
       <div class="stat day"><b id="days-left">12</b><span id="days-left-l">days to checkpoint (Oct 7)</span></div>
     </div>
   </div>
@@ -386,27 +396,27 @@
 
     <p class="sub">Step 1 · Scope</p>
     <ul class="rows">
-      <li><span class="t">Career pathway chosen</span><span class="pill ok">Done</span></li>
-      <li><span class="t">Industry code chosen and justified</span><span class="pill ok">Done</span><span class="n">Code 5241 is now named on the Data Preparation and Career Evaluation pages, with the reason we chose insurance.</span></li>
-      <li><span class="t">Project question stated</span><span class="pill ok">Done</span></li>
-      <li><span class="t">Website and rationale page</span><span class="pill ok">Done</span></li>
-      <li><span class="t">Literature review and references</span><span class="pill part">Partial</span><span class="n">Eight links across two pages, but no written review of what they say.</span></li>
+      <li data-item="s1-1"><span class="t">Career pathway chosen</span><span class="pill ok">Done</span></li>
+      <li data-item="s1-2"><span class="t">Industry code chosen and justified</span><span class="pill ok">Done</span><span class="n">Code 5241 is now named on the Data Preparation and Career Evaluation pages, with the reason we chose insurance.</span></li>
+      <li data-item="s1-3"><span class="t">Project question stated</span><span class="pill ok">Done</span></li>
+      <li data-item="s1-4"><span class="t">Website and rationale page</span><span class="pill ok">Done</span></li>
+      <li data-item="s1-5"><span class="t">Literature review and references</span><span class="pill part">Partial</span><span class="n">Eight links across two pages, but no written review of what they say.</span></li>
     </ul>
 
     <p class="sub">Step 2 · Data and market snapshot</p>
     <ul class="rows">
-      <li><span class="t">Filtered dataset</span><span class="pill ok">Done</span></li>
-      <li><span class="t">Cleaning steps written up</span><span class="pill part">Partial</span><span class="n">The <a href="https://gheydt.github.io/ad688group3.github.io/data_preparation.html" target="_blank" rel="noopener">Data Preparation</a> page now has the write-up. Its bullet lists run together into one line and need a small formatting fix.</span></li>
-      <li><span class="t">Market snapshot page</span><span class="pill ok">Done</span><span class="n">Built on the old dataset, though.</span></li>
-      <li><span class="t">Charts for salary, location, experience, remote</span><span class="pill part">Partial</span><span class="n">Only remote and skills are charted. Salary and location are plain tables; experience is marked unavailable.</span></li>
+      <li data-item="s2-1"><span class="t">Filtered dataset</span><span class="pill ok">Done</span></li>
+      <li data-item="s2-2"><span class="t">Cleaning steps written up</span><span class="pill part">Partial</span><span class="n">The <a href="https://gheydt.github.io/ad688group3.github.io/data_preparation.html" target="_blank" rel="noopener">Data Preparation</a> page now has the write-up. Its bullet lists run together into one line and need a small formatting fix.</span></li>
+      <li data-item="s2-3"><span class="t">Market snapshot page</span><span class="pill ok">Done</span><span class="n">Built on the old dataset, though.</span></li>
+      <li data-item="s2-4"><span class="t">Charts for salary, location, experience, remote</span><span class="pill part">Partial</span><span class="n">Only remote and skills are charted. Salary and location are plain tables; experience is marked unavailable.</span></li>
     </ul>
 
     <p class="sub">Step 3 · Skill gap</p>
     <ul class="rows">
-      <li><span class="t">Skill gap analysis</span><span class="pill ok">Done</span></li>
-      <li><span class="t">Comparison table or scorecard</span><span class="pill ok">Done</span></li>
-      <li><span class="t">Draft recommendations</span><span class="pill no">Missing</span><span class="n">No upskilling plan yet. Step 3 asked for one: which skills each member learns first, which courses help, and how we cover for each other.</span></li>
-      <li><span class="t">Site readable and logical</span><span class="pill part">Partial</span><span class="n">2 of 8 tabs are still empty pages.</span></li>
+      <li data-item="s3-1"><span class="t">Skill gap analysis</span><span class="pill ok">Done</span></li>
+      <li data-item="s3-2"><span class="t">Comparison table or scorecard</span><span class="pill ok">Done</span></li>
+      <li data-item="s3-3"><span class="t">Draft recommendations</span><span class="pill no">Missing</span><span class="n">No upskilling plan yet. Step 3 asked for one: which skills each member learns first, which courses help, and how we cover for each other.</span></li>
+      <li data-item="s3-4"><span class="t">Site readable and logical</span><span class="pill part">Partial</span><span class="n">2 of 8 tabs are still empty pages.</span></li>
     </ul>
   </div>
 
@@ -667,16 +677,20 @@
   .glass-btn { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.18); background: rgba(255, 255, 255, 0.08); color: #fff; font: 600 14px/1 var(--f-body); cursor: pointer; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
   .glass-btn:hover { background: rgba(255, 255, 255, 0.14); }
   .glass-btn.icon { width: 44px; padding: 0; justify-content: center; font-size: 22px; }
-  .glass-btn:focus-visible, .tabs2 button:focus-visible, .it-head:focus-visible, .note-btn:focus-visible { outline: 2px solid var(--d-glow); outline-offset: 2px; }
+  .glass-btn:focus-visible, .tabs2 button:focus-visible, .it-title:focus-visible, .it-head .chip:focus-visible, .note-btn:focus-visible, .pk-opt:focus-visible, .upd-banner:focus-visible, .upd-got:focus-visible { outline: 2px solid var(--d-glow); outline-offset: 2px; }
   .badge { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px; background: #fff; color: #0e2c44; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
   .badge[hidden] { display: none !important; }
 
   .dash-kpis { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center; margin-top: 18px; }
-  .ring { width: 104px; height: 104px; position: relative; }
-  .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring { width: 132px; height: 132px; position: relative; }
+  .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
   .ring .num { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; font-family: var(--f-display); }
-  .ring .num b { font-size: 30px; font-weight: 800; line-height: 1; color: #fff; }
-  .ring .num span { display: block; font-size: 11px; color: #9fd8f7; letter-spacing: 0.06em; margin-top: 2px; }
+  .ring .num b { font-size: 28px; font-weight: 800; line-height: 1; color: #fff; font-variant-numeric: tabular-nums; }
+  .ring .num b i { font-style: normal; }
+  .ring .num b small { font-size: 16px; font-weight: 700; color: #cfe8f8; }
+  .ring .num span { display: block; font-size: 11px; color: #9fd8f7; letter-spacing: 0.08em; margin-top: 6px; }
+  .ring .glow { opacity: .3; animation: ring-glow 3.6s ease-in-out infinite; }
+  @keyframes ring-glow { 0%, 100% { opacity: .18; } 50% { opacity: .5; } }
   .kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .kpi { border-radius: 14px; padding: 10px 12px; background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.12); }
   .kpi b { display: block; font-family: var(--f-display); font-size: 24px; font-weight: 800; line-height: 1.1; }
@@ -686,11 +700,11 @@
   .kpi.done { --c: #7fc3a4; } .kpi.part { --c: #e0bd72; } .kpi.miss { --c: #e39396; }
   .dash-sub { grid-column: 1 / -1; font-size: 13px; color: #b9daef; }
   @media (min-width: 760px) { .dash-kpis { grid-template-columns: auto 1fr; grid-template-rows: auto auto; } .ring { grid-row: 1 / 3; } .dash-sub { grid-column: 2; } }
-  @media (max-width: 480px) { .ring { width: 88px; height: 88px; } .ring .num b { font-size: 24px; } .kpi { padding: 8px 10px; } .kpi b { font-size: 20px; } .dash-kpis { gap: 12px; margin-top: 14px; } }
+  @media (max-width: 480px) { .ring { width: 112px; height: 112px; } .ring .num b { font-size: 24px; } .ring .num b small { font-size: 14px; } .ring .num span { margin-top: 5px; } .dash-kpis { grid-template-columns: auto 1fr; grid-template-rows: auto; grid-template-areas: "ring sub" "kpis kpis"; } .ring { grid-area: ring; } .dash-sub { grid-area: sub; grid-column: auto; line-height: 1.4; } .kpi-row { grid-area: kpis; } .kpi { padding: 8px 10px; } .kpi b { font-size: 20px; } .dash-kpis { gap: 12px; margin-top: 14px; } }
   .glass-btn:focus:not(:focus-visible), .x-btn:focus:not(:focus-visible) { outline: none; }
   .dash-kpis > * { min-width: 0; }
   .kpi-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  @media (max-width: 360px) { .ring { width: 72px; height: 72px; } .ring .num b { font-size: 20px; } .kpi-row { gap: 6px; } .kpi { padding: 6px 8px; } .kpi b { font-size: 18px; } .kpi span { font-size: 11px; } .kpi span::before { margin-right: 4px; } .dash-bar .k { letter-spacing: 0.14em; } }
+  @media (max-width: 360px) { .ring { width: 96px; height: 96px; } .ring .num b { font-size: 21px; } .ring .num b small { font-size: 12px; } .ring .num span { font-size: 10px; margin-top: 4px; } .kpi-row { gap: 6px; } .kpi { padding: 6px 8px; } .kpi b { font-size: 18px; } .kpi span { font-size: 11px; } .kpi span::before { margin-right: 4px; } .dash-bar .k { letter-spacing: 0.14em; } }
 
   .dash-main { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 16px calc(24px + env(safe-area-inset-bottom, 0px)); }
   .tabs2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
@@ -713,15 +727,23 @@
   .col-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 2px 4px 8px; }
   .col-head h3 { font-size: 16px; margin: 0; }
   .col-head h3 small { display: block; font-family: var(--f-body); font-weight: 600; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sky-ink); margin-bottom: 2px; }
-  .col-head .frac { font-size: 13px; font-weight: 700; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .col-head .frac { white-space: nowrap; font-size: 13px; font-weight: 700; color: var(--ink-3); font-variant-numeric: tabular-nums; }
   .minibar { display: flex; gap: 3px; height: 6px; margin: 0 4px 12px; }
   .minibar i { flex: 1; border-radius: 6px; }
   .it-list { list-style: none; display: grid; gap: 10px; }
   .it { position: relative; background: #fff; border-radius: 16px; border: 1px solid rgba(20, 36, 51, 0.08); box-shadow: 0 1px 2px rgba(20, 36, 51, 0.04), 0 6px 18px rgba(20, 36, 51, 0.05); overflow: hidden; transition: box-shadow .3s var(--ease-expo), transform .3s var(--ease-expo); }
   .it:hover { box-shadow: 0 2px 4px rgba(20, 36, 51, 0.05), 0 14px 30px rgba(20, 36, 51, 0.09); }
-  .it-head { width: 100%; display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; text-align: left; border: 0; background: none; padding: 14px 14px 14px 16px; min-height: 58px; font: 600 15px/1.35 var(--f-body); color: var(--ink); cursor: pointer; }
-  .chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--soft); color: var(--cink); white-space: nowrap; }
+  .it-head { width: 100%; display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 0 14px 0 0; min-height: 58px; cursor: pointer; }
+  .it-title { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 14px 0 14px 16px; min-height: 58px; font: 600 15px/1.35 var(--f-body); color: var(--ink); cursor: pointer; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; font-family: var(--f-body); font-size: 12px; font-weight: 700; line-height: 1.2; padding: 4px 10px; border: 0; border-radius: 999px; background: var(--soft); color: var(--cink); white-space: nowrap; }
   .chip::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--c); }
+  .chip svg { display: none; }
+  .it-head .chip:disabled { pointer-events: none; }
+  .it.saving .it-head .chip { opacity: .7; cursor: progress; }
+  .it-head .chip:not(:disabled) { position: relative; cursor: pointer; padding: 6px 9px 6px 11px; box-shadow: inset 0 0 0 1px rgba(20, 36, 51, 0.16); }
+  .it-head .chip:not(:disabled) svg { display: block; }
+  .it-head .chip:not(:disabled)::after { content: ''; position: absolute; inset: -9px -4px; }
+  .it-err { margin: -4px 0 0; padding: 0 16px 12px; }
   .it-body { display: none; padding: 0 16px 14px 16px; }
   .it.open .it-body { display: block; animation: fade .35s var(--ease-expo); }
   @keyframes fade { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
@@ -734,11 +756,16 @@
   .fact .by { margin-top: 6px; font-size: 12px; color: var(--ink-3); }
   .fact .by strong { font-weight: 600; color: var(--azure-deep); }
   .view-only { margin: 0 4px 12px; font-size: 13px; color: var(--ink-3); }
-  .ed-cue { display: none; align-items: center; gap: 5px; margin: -6px -6px -6px auto; min-height: 32px; padding: 0 8px; border: 0; border-radius: 8px; background: none; color: var(--ink-3); font: 600 12px/1 var(--f-body); letter-spacing: 0; text-transform: none; cursor: pointer; }
+  .fact-foot { display: none; align-items: center; gap: 8px; margin-top: 6px; min-height: 30px; }
+  .fact-foot.has-by, .can-edit .fact-foot { display: flex; }
+  .fact-foot .by { flex: 1; min-width: 0; margin: 0; }
+  .ed-cue { display: none; position: relative; flex: none; align-items: center; justify-content: center; width: 30px; height: 30px; margin-left: auto; padding: 0; border: 1px solid rgba(34, 120, 189, 0.38); border-radius: 9px; background: var(--azure-soft); color: var(--azure-deep); cursor: pointer; }
+  .ed-cue::after { content: ''; position: absolute; inset: -7px; }
+  .ed-cue svg { width: 16px; height: 16px; flex: none; }
   .can-edit .ed-cue { display: inline-flex; }
   .can-edit .fact:not(.editing) { cursor: text; transition: box-shadow .2s var(--ease-expo); }
   .can-edit .fact:not(.editing):hover { box-shadow: inset 0 0 0 1px var(--line-2); }
-  .can-edit .fact:not(.editing):hover .ed-cue, .ed-cue:focus-visible { color: var(--azure-deep); background: var(--azure-soft); }
+  .can-edit .fact:not(.editing):hover .ed-cue, .ed-cue:focus-visible { color: var(--azure-deep); background: rgba(34, 120, 189, 0.18); }
   .ed-cue:focus-visible { outline: 2px solid var(--azure); outline-offset: 1px; }
   .fact.editing { background: #fff; box-shadow: 0 0 0 2px var(--azure); }
   .fact.editing .ed-cue { display: none; }
@@ -786,7 +813,113 @@
   .composer .hint { font-size: 12px; color: var(--ink-3); flex: 1; }
   .composer .save { min-height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: var(--azure); color: #fff; font: 700 14px/1 var(--f-body); cursor: pointer; }
   .composer .save:disabled { opacity: .5; cursor: default; }
-  @media (prefers-reduced-motion: reduce) { .dash-top::before, .dash-top::after { animation: none; } dialog.dash[open], dialog.notes[open], .it.open .it-body { animation: none; } }
+
+  /* status picker sheet */
+  dialog.picker { border: 0; padding: 0; width: 100%; max-width: 480px; max-height: 88dvh; margin: auto auto 0; border-radius: 22px 22px 0 0; background: #fff; color: var(--ink); box-shadow: 0 -20px 60px rgba(8, 28, 44, 0.35); overflow: hidden; }
+  @media (min-width: 760px) { dialog.picker { margin: auto; border-radius: 20px; } }
+  dialog.picker::backdrop { background: rgba(8, 24, 38, 0.45); }
+  dialog.picker[open] { animation: dash-in .35s var(--ease-expo); }
+  .pk-shell { padding: 0 0 calc(14px + env(safe-area-inset-bottom, 0px)); }
+  .pk-head { padding: 18px 18px 12px; display: flex; gap: 12px; align-items: flex-start; }
+  .pk-head .k { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sky-ink); }
+  .pk-head h3 { margin: 2px 0 0; font-size: 17px; line-height: 1.3; }
+  .pk-opts { display: grid; gap: 10px; padding: 0 18px 4px; }
+  .pk-opt { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; width: 100%; min-height: 60px; padding: 10px 16px; border: 1px solid var(--line-2); border-radius: 14px; background: #fff; color: var(--ink); text-align: left; font: 700 16px/1.25 var(--f-body); cursor: pointer; }
+  .pk-opt:active { background: var(--tint); }
+  .pk-opt .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--c); }
+  .pk-opt small { display: block; margin-top: 2px; font-size: 13px; font-weight: 500; color: var(--ink-3); }
+  .pk-opt .cur { font-size: 12px; font-weight: 700; color: var(--azure-deep); }
+  .pk-opt[aria-pressed="true"] { border-color: var(--azure); background: var(--azure-soft); box-shadow: 0 0 0 2px rgba(34, 120, 189, 0.18); }
+
+  /* change alert banner */
+  .upd-top { padding: calc(env(safe-area-inset-top, 0px) + 12px) 0 4px; }
+  .upd-top.none { display: none; }
+  .upd-banner { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; width: 100%; min-height: 64px; padding: 10px 14px; text-align: left; border: 1px solid rgba(34, 120, 189, 0.28); border-left: 4px solid var(--azure); border-radius: var(--radius-card); background: #fff; color: var(--ink); font: 500 14px/1.4 var(--f-body); cursor: pointer; box-shadow: 0 6px 20px rgba(34, 120, 189, 0.12), var(--shadow); }
+  .upd-banner:active { background: var(--tint); }
+  .upd-banner .ub-n { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--azure); color: #fff; font: 800 16px/1 var(--f-display); }
+  .upd-banner .ub-t { display: block; font-weight: 700; font-size: 15px; }
+  .upd-banner .ub-s { display: block; color: var(--ink-2); font-size: 13px; }
+  .upd-banner .ub-go { font-size: 13px; font-weight: 700; color: var(--azure-deep); white-space: nowrap; }
+  @media (max-width: 480px) { .upd-banner { grid-template-columns: auto 1fr; } .upd-banner .ub-go { grid-column: 2; } }
+  .dash-main > .upd-banner { margin-bottom: 14px; }
+  .glass-btn .badge { margin-left: 2px; }
+  .dash-bar .glass-btn { flex: none; }
+  @media (max-width: 520px) {
+    .dash-bar { flex-wrap: wrap; row-gap: 12px; }
+    .dash-bar > div:first-child { flex: 1 1 60%; min-width: 0; }
+    .dash-bar .spacer { display: none; }
+    #dash-x { order: 2; }
+    #all-upd, #all-notes { order: 3; flex: 1 1 calc(50% - 6px); justify-content: center; }
+  }
+  .btn.ghost.upd-open { grid-column: 1 / -1; }
+  .btn.ghost .badge { background: var(--azure); color: #fff; }
+
+  /* updates sheet: full screen on phones */
+  dialog.updates { border: 0; padding: 0; width: 100%; max-width: 100%; height: 100%; max-height: 100%; margin: 0; background: var(--canvas); color: var(--ink); overflow: hidden; }
+  @media (min-width: 760px) { dialog.updates { width: min(640px, 94vw); height: min(780px, 88vh); margin: auto; border-radius: 20px; box-shadow: 0 30px 80px rgba(8, 28, 44, 0.45); } }
+  dialog.updates::backdrop { background: rgba(8, 24, 38, 0.55); }
+  dialog.updates[open] { animation: dash-in .4s var(--ease-expo); }
+  .upd-shell { display: flex; flex-direction: column; height: 100%; }
+  .upd-head { flex: none; padding: calc(env(safe-area-inset-top, 0px) + 16px) 16px 12px 18px; display: flex; gap: 12px; align-items: flex-start; background: #fff; border-bottom: 1px solid var(--line); }
+  .upd-head .k { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sky-ink); }
+  .upd-head h3 { margin: 2px 0 0; font-size: 20px; }
+  .upd-list { list-style: none; flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 14px 16px; display: grid; gap: 10px; align-content: start; }
+  .uc { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; box-shadow: var(--shadow); }
+  .uc.new { border-left: 4px solid var(--azure); }
+  .uc-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--ink-3); }
+  .uc-tag { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; }
+  .uc-tag.st { color: var(--azure-deep); background: var(--azure-soft); }
+  .uc-tag.ds { color: var(--ink-2); background: var(--tint); box-shadow: inset 0 0 0 1px var(--line-2); }
+  .uc-title { margin-top: 8px; font-weight: 700; font-size: 15px; line-height: 1.35; }
+  .uc-meta { font-size: 13px; color: var(--ink-3); margin-top: 2px; }
+  .uc-chg { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
+  .uc-chg svg { color: var(--ink-3); flex: none; }
+  .uc-fl { margin-top: 10px; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); }
+  .uc-tx { margin-top: 4px; border-radius: 10px; padding: 8px 10px; font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+  .uc-tx small { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 2px; }
+  .uc-tx.old { background: #f1f4f7; color: var(--ink-3); }
+  .uc-tx.old s { text-decoration-color: rgba(86, 111, 133, 0.6); }
+  .uc-tx.now { background: var(--azure-soft); color: var(--ink); }
+  .upd-foot { flex: none; padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px)); background: #fff; border-top: 1px solid var(--line); }
+  .upd-got { width: 100%; min-height: 52px; border: 0; border-radius: var(--radius); background: var(--azure); color: #fff; font: 700 16px/1 var(--f-body); cursor: pointer; }
+  .upd-got:active { background: var(--azure-deep); }
+  .btn.ghost.diff-open { grid-column: 1 / -1; }
+
+  /* project difference analysis sheet (reuses the updates sheet frame) */
+  .diff-sub { margin-top: 2px; font-size: 13px; color: var(--ink-3); }
+  #diff-list { display: flex; flex-direction: column; gap: 10px; }
+  .df { flex: none; background: #fff; border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; margin-top: 0; padding-top: 0; }
+  .df > summary { color: var(--ink); font-weight: 400; }
+  .df > summary::after, .df[open] > summary::after { content: none; }
+  .df > summary { list-style: none; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; min-height: 44px; padding: 12px 14px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .df > summary::-webkit-details-marker { display: none; }
+  .df > summary:focus-visible { outline: 2px solid var(--azure); outline-offset: -2px; }
+  .df > summary:active { background: var(--tint); }
+  .df-d { grid-column: 1; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--azure-deep); }
+  .df-t { grid-column: 1; color: var(--ink); font-weight: 700; font-size: 15px; line-height: 1.35; }
+  .df-w { grid-column: 1; font-size: 13px; color: var(--ink-3); }
+  .df-chev { grid-column: 2; grid-row: 1 / span 3; align-self: center; color: var(--ink-3); transition: transform .25s var(--ease-expo); }
+  .df[open] > summary .df-chev { transform: rotate(180deg); }
+  .df[open] > summary { border-bottom: 1px solid var(--line); }
+  .df-body { padding: 12px 14px 14px; font-size: 14px; line-height: 1.55; overflow-wrap: anywhere; }
+  .df-pg { color: var(--ink-2); }
+  .df-st { margin-top: 12px; border-radius: 10px; background: var(--tint); padding: 10px 12px; }
+  .df-stl { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+  .df-stl b { color: var(--ink); }
+  .df-sr { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+  .df-stl + .df-sr { border-top: 0; padding-top: 0; }
+  .df-sn { font-weight: 700; font-size: 14px; line-height: 1.35; }
+  .df-sc { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; }
+  .df-sc svg { color: var(--ink-3); flex: none; }
+  .df-nc { font-size: 12px; font-weight: 600; color: var(--ink-3); }
+  .df-sr.same .df-sn { font-weight: 600; color: var(--ink-2); }
+  .df-sw { margin-top: 6px; font-size: 13px; line-height: 1.5; color: var(--ink-2); }
+  .df-sw b { color: var(--ink); }
+  .df-note { margin-top: 4px; font-size: 13px; line-height: 1.5; color: var(--ink-2); }
+  .df-pg b { color: var(--ink); }
+  .df-body ul { margin: 10px 0 0 18px; } .df-body li + li { margin-top: 6px; }
+  .df-body a.xl { color: var(--azure-deep); font-weight: 600; text-decoration: underline; text-decoration-color: rgba(34, 120, 189, 0.35); text-underline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce) { .ring .glow { animation: none; opacity: .28; } .dash-top::before, .dash-top::after { animation: none; } dialog.dash[open], dialog.notes[open], dialog.picker[open], dialog.updates[open], .it.open .it-body { animation: none; } .df-chev { transition: none; } }
 </style>
 
 
@@ -881,6 +1014,7 @@
           <h2 id="dash-title">Project dashboard</h2>
         </div>
         <div class="spacer"></div>
+        <button class="glass-btn" id="all-upd" type="button" data-upd-all hidden>Updates <span class="badge" hidden>0</span></button>
         <button class="glass-btn" id="all-notes" type="button" hidden>Notes <span class="badge" id="notes-badge" hidden>0</span></button>
         <button class="glass-btn icon" id="dash-x" type="button" aria-label="Close dashboard">&times;</button>
       </div>
@@ -891,6 +1025,7 @@
       </div>
     </div>
     <div class="dash-main">
+      <button class="upd-banner" type="button" data-upd-new hidden><span class="ub-n"></span><span><b class="ub-t"></b><span class="ub-s"></span></span><span class="ub-go">See what changed</span></button>
       <div class="tabs2" role="tablist" id="tabs2"></div>
       <div class="pick-hint" id="pick-hint">Pick a step above to see its checklist.</div>
       <div class="view-only" id="view-only" hidden>You can view this dashboard. To edit it, ask Gabriel for edit access.</div>
@@ -915,6 +1050,37 @@
   </div>
 </dialog>
 
+<dialog class="picker" id="picker" aria-labelledby="pk-title">
+  <div class="pk-shell">
+    <div class="pk-head">
+      <div><div class="k">Change status</div><h3 id="pk-title"></h3></div>
+      <button class="x-btn" id="pk-x" type="button" aria-label="Close">&times;</button>
+    </div>
+    <div class="pk-opts" id="pk-opts"></div>
+  </div>
+</dialog>
+
+<dialog class="updates" id="updates" aria-labelledby="upd-title">
+  <div class="upd-shell">
+    <div class="upd-head">
+      <div><div class="k" id="upd-k"></div><h3 id="upd-title"></h3></div>
+      <button class="x-btn" id="upd-x" type="button" aria-label="Close updates">&times;</button>
+    </div>
+    <ul class="upd-list" id="upd-list"></ul>
+    <div class="upd-foot"><button class="upd-got" id="upd-got" type="button">Got it</button></div>
+  </div>
+</dialog>
+
+<dialog class="updates" id="diff" aria-labelledby="diff-title">
+  <div class="upd-shell">
+    <div class="upd-head">
+      <div><div class="k">Group 3 team site</div><h3 id="diff-title">Project Difference Analysis</h3><div class="diff-sub">Changes to the team site, newest first</div></div>
+      <button class="x-btn" id="diff-x" type="button" aria-label="Close project difference analysis">&times;</button>
+    </div>
+    <div class="upd-list" id="diff-list"></div>
+  </div>
+</dialog>
+
 <script>
 (function () {
   var ST = {
@@ -934,37 +1100,183 @@
     { name: "Step 2", title: "Data preparation and market baseline", items: [
       ["s2-1", "Filtered dataset for our pathway and industry", "done", "Old data: 1,895 insurance posts cut to 27 data roles. 2024 data: 1,908 insurance posts cut to 29 engineer roles. Both are saved in the repo.", "Nothing, but the two versions should become one."],
       ["s2-2", "Cleaning pipeline documented", "part", "The [[Data Preparation|https://gheydt.github.io/ad688group3.github.io/data_preparation.html]] page now covers the industry filter, the job titles we matched, the fields we kept, and how duplicates and missing values were handled. The full steps are in the [[Step 2 notebook|https://github.com/gheydt/ad688group3.github.io/blob/main/notebooks/step2_pyspark_filter_insurance.ipynb]].", "The bullet lists on that page run together into one long line. Adding a blank line before each list fixes it."],
-      ["s2-3", "Market baseline page complete", "done", "Job volume, salary, location, experience, remote work, top employers, skills, and limitations are all covered.", "The [[Market Baseline|https://gheydt.github.io/ad688group3.github.io/market_baseline.html]] page is built on the old dataset. Rerun it on the 2024 data."],
-      ["s2-4", "Salary, location, experience, remote charted", "part", "Charts for remote work and top skills on the [[Market Baseline|https://gheydt.github.io/ad688group3.github.io/market_baseline.html]] page.", "Salary and location are plain text tables, and experience is marked unavailable. The 2024 data has salary on 13 of 29 roles and experience on 22, so all four charts become possible."]
+      ["s2-3", "Market baseline page complete", "done", "Job volume, salary, location, experience, remote work, top employers, skills, and limitations are all covered.", "Nothing. Rebuilt on the 2024 data on Oct 1, so it now matches the Skill Gap page (29 roles)."],
+      ["s2-4", "Salary, location, experience, remote charted", "done", "All four are charted on the [[Market Baseline|https://gheydt.github.io/ad688group3.github.io/market_baseline.html]] page, built on the 2024 data: salary (13 of 29 roles), location (10 states), experience (22 of 29) and remote work, plus employers and skills.", "Nothing."]
     ]},
     { name: "Step 3", title: "Career evaluation and skill gap", items: [
       ["s3-1", "Skill-gap analysis completed", "done", "On the [[Skill Gap Analysis|https://gheydt.github.io/ad688group3.github.io/skill_gap_analysis.html]] page: our 1 to 5 ratings on 10 skills compared with how often 29 job posts ask for each. Biggest gaps: cloud, Python, Git, Spark.", "Nothing."],
       ["s3-2", "Benchmark table or scorecard", "done", "A table showing team average, market demand, gap, and priority for every skill.", "Nothing."],
-      ["s3-3", "Recommendations draft added", "miss", "Nothing yet. The [[Final Recommendations|https://gheydt.github.io/ad688group3.github.io/final_recommendations.html]] tab is empty.", "A draft upskilling plan: which skill each of us learns first, which course or resource, and how we cover for each other. Step 3 asked for this."],
+      ["s3-3", "Recommendations draft added", "part", "A draft upskilling plan on the [[Final Recommendations|https://gheydt.github.io/ad688group3.github.io/final_recommendations.html]] page: first skill per person, resources, timeline, and who covers which gap.", "Team review and rewrite in our own words. Confirm the first-skill picks (Haben's was a tie). For the final build: role, location and employer recommendations, and team contributions."],
       ["s3-4", "Website readable and logical", "part", "A clear 8-tab menu in project order on our [[team site|https://gheydt.github.io/ad688group3.github.io/index.html]].", "Two tabs are still empty ([[Predictive Modeling|https://gheydt.github.io/ad688group3.github.io/ml_methods.html]], [[Final Recommendations|https://gheydt.github.io/ad688group3.github.io/final_recommendations.html]]). The menu says Exploratory Analysis but [[that page|https://gheydt.github.io/ad688group3.github.io/market_baseline.html]] is titled Market Baseline."]
     ]}
   ];
-  var CHECKED = "Checked Sep 29, 2026 against the team site and repo";
+  var CHECKED = "Checked Oct 1, 2026 against the team site and repo";
+
+  // Project Difference Analysis: changes to the team Quarto site, newest first. Claude maintains this list.
+  // Each entry: date (ISO), who, title, pages [[Label|url]], bullets (strings, [[Label|url]] links allowed).
+  var DIFFS = [
+    { date: "2026-10-01", who: "Gabriel", title: "Market Baseline rebuilt on the 2024 data, with all four charts",
+      status: [
+        { item: "s2-4", from: "part", to: "done", why: "Salary, location, experience and remote are now all charted, built on the 2024 data that has salary on 13 roles and experience on 22." },
+        { item: "s2-3", from: "done", to: "done", why: "Already done; now rebuilt on the 2024 data so it matches the Skill Gap page." }
+      ],
+      pages: "[[Market Baseline|https://gheydt.github.io/ad688group3.github.io/market_baseline.html]]",
+      bullets: [
+        "Data: before, the old Step 2 data with 27 mixed data roles (engineers, analysts, scientists, BI). After, the 2024 Step 3 data with the same 29 Data Engineer roles the Skill Gap page uses, so the two pages now agree.",
+        "Employers: before, mostly non-insurers (Amazon, Replit, David's Bridal) that slipped through the old industry filter. After, 7 employers, mostly insurers; State Farm posts 15 of the 29.",
+        "Salary: before, 5 of 27 listed pay, average $163,840, range $93,000 to $280,000, text only. After, 13 of 29, median about $142,230, range $127,000 to $161,625, charted.",
+        "Location: before, 9 of 27 had a state, California led with 2. After, all 29 have a state across 10 states; Texas, Georgia, Wisconsin and Arizona lead with 4 each, mostly State Farm's office footprint.",
+        "Experience: before, not available for any posting. After, 22 of 29 state a minimum; typical is 5 years, range 1 to 8. Charted.",
+        "Remote: before, 12 remote, 4 hybrid, 3 on-site, 8 unknown. After, 9 remote (31%), 20 unstated. Charted.",
+        "Top skills: before, Analytics 59%, Automation 22%, BI 19%. After, Python 86%, Data Analysis 76%, AWS 72%, SQL 62%.",
+        "New disclosures: the 29 postings are 13 distinct jobs (median salary $136,415 counted once each); a Hartford, Wisconsin listing is likely Hartford, Connecticut; why SQL reads 62% here and 76% on Skill Gap."
+      ] },
+    { date: "2026-10-01", who: "Gabriel", title: "Final Recommendations draft added",
+      status: [
+        { item: "s3-3", from: "miss", to: "part", why: "A draft upskilling plan now exists. It stays partial until the team rewrites it and adds the role, location and employer recommendations the final build requires." }
+      ],
+      pages: "[[Final Recommendations|https://gheydt.github.io/ad688group3.github.io/final_recommendations.html]]",
+      bullets: [
+        "Before: the tab was an empty page. After: a draft upskilling plan marked for team review.",
+        "First skill per person from the skill ratings: Gabriel Python, Genevieve cloud (AWS), Haben Spark; Git for everyone through reviewed pull requests.",
+        "Resources, a timeline through Oct 14, and who covers which gap until each person reaches rating 3.",
+        "Still to add for the final version: role, location and employer recommendations, and team contributions."
+      ] },
+    { date: "2026-09-28", who: "Genevieve", title: "Data Preparation and Career Evaluation filled in",
+      statusNote: "Checklist first scored on Sep 29, after this change: industry code Done, cleaning pipeline Partial. Earlier status not recorded.",
+      pages: "[[Data Preparation|https://gheydt.github.io/ad688group3.github.io/data_preparation.html]], [[Career Evaluation|https://gheydt.github.io/ad688group3.github.io/career_evaluation.html]]",
+      bullets: [
+        "Data Preparation went from a title to a write-up of the industry filter, the job titles matched, the fields kept, and how duplicates and missing values were handled.",
+        "Career Evaluation now names industry code 5241, explains why insurance, and lists five sources.",
+        "Known issue: the Data Preparation bullet lists run together into one line."
+      ] },
+    { date: "2026-09-22", who: "Haben", title: "Skill Gap Analysis built, team ratings added",
+      statusNote: "Before the checklist was tracked.",
+      pages: "[[Skill Gap Analysis|https://gheydt.github.io/ad688group3.github.io/skill_gap_analysis.html]]",
+      bullets: [
+        "New page comparing the team's 1 to 5 ratings on 10 skills with how often 29 job posts ask for each.",
+        "Benchmark table: team average, market demand, gap and priority per skill. Biggest gaps: cloud, Python, Git, Spark.",
+        "Team ratings file added; small trim to the Market Baseline page."
+      ] },
+    { date: "2026-09-21", who: "Genevieve and Gabriel", title: "Site menu restructured, 2024 dataset documented",
+      statusNote: "Before the checklist was tracked.",
+      pages: "[[Home|https://gheydt.github.io/ad688group3.github.io/index.html]]",
+      bullets: [
+        "Genevieve: menu reorganized into 8 tabs in project order; Predictive Modeling tab added (still empty).",
+        "Gabriel: Step 3 notebook added that loads and checks the 2024 dataset and exports the 1,908 insurance postings used by Skill Gap and now Market Baseline."
+      ] },
+    { date: "2026-09-15", who: "Haben", title: "Market Baseline first version (old data)",
+      statusNote: "Before the checklist was tracked.",
+      pages: "[[Market Baseline|https://gheydt.github.io/ad688group3.github.io/market_baseline.html]]",
+      bullets: [
+        "First market snapshot: 27 data-related postings from the Step 2 data.",
+        "Salary and location as text tables, experience marked unavailable, remote and skills summarized.",
+        "Replaced on Oct 1 by the 2024 version above."
+      ] },
+    { date: "2026-09-14", who: "Genevieve and Gabriel", title: "Page structure and Step 2 notebook",
+      statusNote: "Before the checklist was tracked.",
+      pages: "[[Project Overview|https://gheydt.github.io/ad688group3.github.io/introduction.html]]",
+      bullets: [
+        "Genevieve: page structure for the project tabs, page titles, and the Project Overview format.",
+        "Gabriel: Step 2 notebook that filters the class dataset to insurance carriers (code 5241), with its outputs."
+      ] },
+    { date: "2026-09-03", who: "Genevieve", title: "Team site created",
+      statusNote: "Before the checklist was tracked.",
+      pages: "[[Home|https://gheydt.github.io/ad688group3.github.io/index.html]]",
+      bullets: [ "First Quarto render: home page, about page and site style." ] }
+  ];
 
   var $ = function (id) { return document.getElementById(id); };
+  // Keys come from shared database docs, so a crafted key like "constructor" must never resolve to an inherited member.
+  function has(o, k) { return Object.prototype.hasOwnProperty.call(o, k); }
   function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
   function linkify(s) { return esc(s).replace(/\[\[(.+?)\|(https:\/\/[^\]\s]+)\]\]/g, '<a class="xl" href="$2" target="_blank" rel="noopener">$1</a>'); }
   var ALL = [], TITLE = { general: "General" }, BYID = {};
   STEPS.forEach(function (s) { s.items.forEach(function (it) { ALL.push(it); TITLE[it[0]] = it[1]; BYID[it[0]] = it; }); });
-  var n = { done: 0, part: 0, miss: 0 };
-  ALL.forEach(function (it) { n[it[2]]++; });
+  var STEPNAME = {};
+  STEPS.forEach(function (st) { st.items.forEach(function (it) { STEPNAME[it[0]] = st.name; }); });
 
-  // progress ring
-  (function () {
-    var r = 42, C = 2 * Math.PI * r, len = C * n.done / ALL.length;
-    var segs = '<circle cx="52" cy="52" r="' + r + '" fill="none" stroke="#8ec8ee" stroke-width="9" stroke-linecap="round" stroke-dasharray="' + len + " " + (C - len) + '"/>';
-    $("ring").innerHTML = '<svg viewBox="0 0 104 104" aria-hidden="true"><circle cx="52" cy="52" r="' + r + '" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="9"/>' + segs + '</svg>' +
-      '<div class="num"><div><b>' + n.done + '/' + ALL.length + '</b><span>DONE</span></div></div>';
+  // Status overrides saved from the page: STATUSES[id] = { status, by, at }. They win over the baseline in STEPS.
+  var STATUSES = {}, PEND = {};
+  function stOf(id) { var o = has(STATUSES, id) ? STATUSES[id] : null; return o && has(ST, o.status) ? o.status : BYID[id][2]; }
+  var PILL = { done: ["ok", "Done"], part: ["part", "Partial"], miss: ["no", "Missing"] };
+  // Part 2 pills follow the live status of the same checklist item.
+  function paintRows() {
+    [].forEach.call(document.querySelectorAll("#next .rows li[data-item]"), function (li) {
+      var id = li.getAttribute("data-item"), pl = li.querySelector(".pill");
+      if (!has(BYID, id) || !pl) return;
+      var p = PILL[stOf(id)]; pl.className = "pill " + p[0]; pl.textContent = p[1];
+    });
+  }
+
+  // Progress ring: built once, then the arc and the number animate together.
+  var RING = { arc: null, glow: null, num: null, shown: 0, raf: 0, C: 2 * Math.PI * 42 };
+  function reducedMotion() { return !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches); }
+  function ringBuild() {
+    $("ring").innerHTML = '<svg viewBox="0 0 104 104" aria-hidden="true"><defs><filter id="ring-blur" filterUnits="userSpaceOnUse" x="-12" y="-12" width="128" height="128"><feGaussianBlur stdDeviation="3.2"/></filter></defs>' +
+      '<circle cx="52" cy="52" r="42" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="9"/>' +
+      '<g class="glow" filter="url(#ring-blur)"><circle cx="52" cy="52" r="42" fill="none" stroke="#8ec8ee" stroke-width="11" stroke-linecap="round"/></g>' +
+      '<circle class="arc" cx="52" cy="52" r="42" fill="none" stroke="#8ec8ee" stroke-width="9" stroke-linecap="round"/></svg>' +
+      '<div class="num"><div><b><i class="rn"></i><small>/' + ALL.length + '</small></b><span>DONE</span></div></div>';
+    RING.arc = $("ring").querySelector(".arc"); RING.glow = $("ring").querySelector(".glow circle"); RING.num = $("ring").querySelector(".rn");
+  }
+  function ringDraw(v) {
+    var len = RING.C * v / ALL.length, d = len + " " + (RING.C - len), vis = len > 0.5 ? "visible" : "hidden";
+    RING.arc.setAttribute("stroke-dasharray", d); RING.glow.setAttribute("stroke-dasharray", d);
+    RING.arc.setAttribute("visibility", vis); RING.glow.setAttribute("visibility", vis);
+    RING.num.textContent = Math.round(v); RING.shown = v;
+  }
+  // Eases the ring from where it is (or from empty, on open) to `to`; reduced motion jumps straight there.
+  function ringTo(to, ms, delay, fromZero) {
+    cancelAnimationFrame(RING.raf);
+    if (fromZero) ringDraw(0);
+    var from = RING.shown;
+    if (reducedMotion() || from === to) { ringDraw(to); return; }
+    var t0 = performance.now() + (delay || 0);
+    (function step(now) {
+      var k = Math.min(1, Math.max(0, (now - t0) / ms)), e = 1 - Math.pow(1 - k, 3);
+      ringDraw(from + (to - from) * e);
+      if (k < 1) RING.raf = requestAnimationFrame(step); else ringDraw(to);
+    })(performance.now());
+  }
+  var ringTarget = 0;
+
+
+  // progress ring, KPI counts, step tab bars and the hero tiles: re-run whenever a status changes
+  function paintStats() {
+    var n = { done: 0, part: 0, miss: 0 };
+    ALL.forEach(function (it) { n[stOf(it[0])]++; });
+    if (!RING.arc) ringBuild();
+    var moved = n.done !== ringTarget; ringTarget = n.done;
+    $("ring").setAttribute("role", "img"); $("ring").setAttribute("aria-label", n.done + " of " + ALL.length + " checkpoint items done");
+    if (!dash || !dash.open) { cancelAnimationFrame(RING.raf); ringDraw(n.done); } else if (moved) ringTo(n.done, 800);
     $("kpis").innerHTML = ["done", "part", "miss"].map(function (k) {
       return '<div class="kpi ' + k + '"><b>' + n[k] + '</b><span>' + (k === "done" ? "done" : k === "part" ? "partial" : "missing") + '</span></div>';
     }).join("");
-    $("dash-sub").textContent = "Due Oct 7 · no points, but it sets up the graded report and presentation · " + CHECKED;
-  })();
+    $("dash-sub").textContent = "Due Oct 7 \u00b7 no points, but it sets up the graded report and presentation \u00b7 " + CHECKED;
+    ["done", "part", "miss"].forEach(function (k) { var t = $("stat-" + k); if (t) t.textContent = n[k]; });
+    paintRows();
+    $("tabs2").innerHTML = STEPS.map(function (s, ix) {
+      var d = s.items.filter(function (i) { return stOf(i[0]) === "done"; }).length;
+      return '<button type="button" role="tab" data-ix="' + ix + '"><span class="sn">' + s.name + '</span><span class="st">' + esc(s.title) + '</span><span class="sf">' + d + ' of ' + s.items.length + ' done</span><span class="sb"><i style="width:' + Math.round(100 * d / s.items.length) + '%"></i></span></button>';
+    }).join("");
+    showTab(curTab);
+    [].forEach.call(document.querySelectorAll("#cols .col"), function (col) {
+      var s = STEPS[+col.dataset.ix], d = s.items.filter(function (i) { return stOf(i[0]) === "done"; }).length;
+      col.querySelector(".frac").textContent = d + " of " + s.items.length;
+    });
+  }
+  // Repaints each status chip in place, so an open item or an open editor is not disturbed.
+  function paintChips() {
+    [].forEach.call(document.querySelectorAll("#cols .it"), function (li) {
+      var id = li.dataset.id, k = stOf(id), st = ST[k], chip = li.querySelector(".chip"), busy = !!PEND[id];
+      li.style.setProperty("--c", st.c); li.style.setProperty("--soft", st.soft); li.style.setProperty("--cink", st.ink);
+      li.classList.toggle("saving", busy);
+      chip.querySelector(".cl").textContent = busy ? st.label + " (saving...)" : st.label;
+      if (busy) chip.setAttribute("aria-busy", "true"); else chip.removeAttribute("aria-busy");
+      chip.setAttribute("aria-label", busy ? "Saving the status change for " + TITLE[id] + ". Wait a moment before changing it again." : "Status: " + st.label + ". Change status of " + TITLE[id]);
+    });
+  }
 
   // in-place edits of "What we have" / "What is left": saved to db collection "edits", they override STEPS
   var F = { have: [3, "What we have"], left: [4, "What is left"] }, EDITS = {}, cur = null, escAt = 0;
@@ -972,27 +1284,33 @@
   var who = null, ME = null, NAMES = { claude: "Claude" };
   function when(iso) { try { return new Date(iso).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); } catch (e) { return ""; } }
   function byline(e) {
-    return '<div class="by">Updated by <strong>' + esc(e.by === ME ? "you" : NAMES[e.by] || "a teammate") + '</strong>' + (e.at ? ' · ' + when(e.at) : "") + '</div>';
+    return '<div class="by">Updated by <strong>' + esc(nameOf(e.by)) + '</strong>' + (e.at ? ' · ' + when(e.at) : "") + '</div>';
   }
   function resolveNames() {
     if (!who) return;
-    var ids = []; Object.keys(EDITS).forEach(function (k) { var b = EDITS[k].by; if (b && b !== "claude" && ids.indexOf(b) < 0) ids.push(b); });
+    var ids = [];
+    function add(b) { if (b && b !== "claude" && ids.indexOf(b) < 0) ids.push(b); }
+    Object.keys(EDITS).forEach(function (k) { add(EDITS[k].by); });
+    Object.keys(STATUSES).forEach(function (k) { add(STATUSES[k].by); });
+    CHANGES.forEach(function (c) { add(c.by); });
     if (!ids.length) return;
     who.profiles(ids).then(function (ps) {
       var changed = false;
-      ids.forEach(function (id) { var nm = ps[id] && ps[id].name; if (nm && NAMES[id] !== nm) { NAMES[id] = nm; changed = true; } });
-      if (changed) repaintAll();
+      ids.forEach(function (id) { var nm = has(ps, id) && ps[id] && ps[id].name; if (nm && NAMES[id] !== nm) { NAMES[id] = nm; changed = true; } });
+      if (changed) { repaintAll(); if (updDlg.open) renderUpdates(); }
     });
   }
+  function nameOf(by) { return by && by === ME ? "you" : by === "claude" ? "Claude" : (by && has(NAMES, by) && NAMES[by]) || "a teammate"; }
   function repaintAll() { document.querySelectorAll("#cols .fact").forEach(function (fa) { if (!cur || cur.fa !== fa) paintFact(fa); }); }
-  var PEN = '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M11.3 1.7a1.5 1.5 0 0 1 2.1 0l.9.9a1.5 1.5 0 0 1 0 2.1L5.5 13.5 2 14l.5-3.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+  var PEN = '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M11.3 1.7a1.5 1.5 0 0 1 2.1 0l.9.9a1.5 1.5 0 0 1 0 2.1L5.5 13.5 2 14l.5-3.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>';
   function srcOf(id, f) { return BYID[id][F[f][0]]; }
   function valOf(id, f) { var e = EDITS[id + "-" + f]; return e ? e.text : srcOf(id, f); }
   function factInner(id, f) {
     var e = EDITS[id + "-" + f];
-    return '<b><span>' + F[f][1] + '</span>' +
-      '<button type="button" class="ed-cue" aria-label="Edit ' + F[f][1].toLowerCase() + ': ' + esc(TITLE[id]) + '">' + PEN + 'Edit</button></b>' +
-      '<div class="fx">' + linkify(valOf(id, f)) + '</div>' + (e ? byline(e) : "");
+    return '<b><span>' + F[f][1] + '</span></b>' +
+      '<div class="fx">' + linkify(valOf(id, f)) + '</div>' +
+      '<div class="fact-foot' + (e ? " has-by" : "") + '">' + (e ? byline(e) : "") +
+      '<button type="button" class="ed-cue" aria-label="Edit ' + F[f][1].toLowerCase() + ': ' + esc(TITLE[id]) + '">' + PEN + '</button></div>';
   }
   function factBox(it, f) { return '<div class="fact' + (f === "left" ? " left" : "") + '" data-f="' + f + '">' + factInner(it[0], f) + '</div>'; }
   function paintFact(fa, err) {
@@ -1022,7 +1340,7 @@
   function openEd(fa, x, y) {
     if (cur) commit();
     var fx = fa.querySelector(".fx"), id = fa.closest(".it").dataset.id, f = fa.dataset.f;
-    [].forEach.call(fa.querySelectorAll(".ed-err, .by"), function (n) { n.remove(); });
+    [].forEach.call(fa.querySelectorAll(".ed-err, .fact-foot"), function (n) { n.remove(); });
     cur = { fa: fa, fx: fx, id: id, f: f };
     fa.classList.add("editing");
     fx.setAttribute("contenteditable", "true"); fx.setAttribute("role", "textbox"); fx.setAttribute("aria-label", F[f][1] + ": " + TITLE[id]);
@@ -1047,26 +1365,89 @@
   // Restoring is itself a change, so it is saved and credited like any other edit.
   function restoreEd() { var c = cur; if (!c) return; cur = null; write(c.fa, c.id, c.f, srcOf(c.id, c.f)); }
   function write(fa, id, f, text) {
-    var k = id + "-" + f, before = EDITS[k], at = new Date().toISOString();
+    var k = id + "-" + f, before = EDITS[k], prev = valOf(id, f), at = new Date().toISOString();
     EDITS[k] = { text: text, by: ME, at: at };
     paintFact(fa);
     db.collection("edits").doc(k).set({ item: id, itemTitle: TITLE[id], field: f, text: text, base: srcOf(id, f), updatedBy: ME, updatedAt: at })
-      .catch(function (e) {
-        if (before) EDITS[k] = before; else delete EDITS[k];
-        if (!cur || cur.fa !== fa) paintFact(fa, e && e.code === "quota_exceeded" ? "The page's storage is full, so this edit did not save." : "That edit did not save. Check your connection, or ask Gabriel for edit access to this page.");
+      .then(function () { logChange({ item: id, itemTitle: TITLE[id], kind: "description", field: f, from: prev, to: text, by: ME, at: at }); },
+        function (e) {
+          if (before) EDITS[k] = before; else delete EDITS[k];
+          if (!cur || cur.fa !== fa) paintFact(fa, e && e.code === "quota_exceeded" ? "The page's storage is full, so this edit did not save." : "That edit did not save. Check your connection, or ask Gabriel for edit access to this page.");
+        });
+  }
+  // The change log is append-only: each doc is added once and never rewritten or deleted.
+  // When the viewer id is unknown, `by` is null for everyone, so the doc ids this browser wrote are remembered to keep it from alerting you to your own edits.
+  var OWN = {}, OWN_KEY = "ad688-dashboard-own-changes";
+  try { JSON.parse(localStorage.getItem(OWN_KEY) || "[]").forEach(function (i) { if (typeof i === "string") OWN[i] = 1; }); } catch (e) {}
+  function rememberOwn(ref) {
+    var id = ref && typeof ref.id === "string" ? ref.id : null; if (!id) return;
+    OWN[id] = 1;
+    try { localStorage.setItem(OWN_KEY, JSON.stringify(Object.keys(OWN).slice(-200))); } catch (e) {}
+    refreshBanner();
+  }
+  function logChange(c) { if (db) db.collection("changes").add(c).then(rememberOwn, function () {}); }
+  function setEditable() {
+    $("cols").classList.add("can-edit");
+    [].forEach.call(document.querySelectorAll("#cols .chip"), function (c) { c.disabled = false; });
+  }
+
+  // tap a status chip: pick Done, Partial or Missing in a bottom sheet
+  var picker = $("picker"), pkId = null;
+  function itemErr(id, msg) {
+    var li = document.querySelector('#cols .it[data-id="' + id + '"]'); if (!li) return;
+    var el = li.querySelector(".it-err");
+    if (!msg) { if (el) el.remove(); return; }
+    if (!el) { el = document.createElement("div"); el.className = "ed-err it-err"; el.setAttribute("role", "alert"); li.insertBefore(el, li.querySelector(".it-body")); }
+    el.textContent = msg;
+    clearTimeout(el._t); el._t = setTimeout(function () { if (el.parentNode) el.remove(); }, 9000);
+  }
+  function openPicker(id) {
+    pkId = id;
+    var now = stOf(id);
+    $("pk-title").textContent = TITLE[id];
+    $("pk-opts").innerHTML = ["done", "part", "miss"].map(function (k) {
+      var st = ST[k], sub = k === "done" ? "Finished and checked" : k === "part" ? "Started, but not finished" : "Not started yet";
+      return '<button type="button" class="pk-opt" data-s="' + k + '" aria-pressed="' + (k === now) + '" style="--c:' + st.c + '"><span class="dot"></span><span>' + st.label + '<small>' + sub + '</small></span><span class="cur">' + (k === now ? "Current" : "") + '</span></button>';
+    }).join("");
+    picker.showModal();
+  }
+  function setStatus(id, to) {
+    var from = stOf(id);
+    if (from === to || !db || PEND[id]) return;
+    var before = STATUSES[id], at = new Date().toISOString();
+    PEND[id] = true; itemErr(id, "");
+    STATUSES[id] = { status: to, by: ME, at: at };
+    paintStats(); paintChips();
+    db.collection("statuses").doc(id).set({ item: id, status: to, updatedBy: ME, updatedAt: at })
+      .then(function () {
+        delete PEND[id]; paintChips();
+        logChange({ item: id, itemTitle: TITLE[id], kind: "status", field: "status", from: from, to: to, by: ME, at: at });
+      }, function (e) {
+        delete PEND[id];
+        if (before) STATUSES[id] = before; else delete STATUSES[id];
+        paintStats(); paintChips();
+        itemErr(id, e && e.code === "quota_exceeded" ? "The page's storage is full, so this status change did not save." : "That status change did not save. Check your connection, or ask Gabriel for edit access to this page.");
       });
   }
+  $("pk-opts").addEventListener("click", function (e) {
+    var b = e.target.closest(".pk-opt"); if (!b) return;
+    var id = pkId; picker.close(); if (id) setStatus(id, b.dataset.s);
+  });
+  $("pk-x").addEventListener("click", function () { picker.close(); });
+  picker.addEventListener("click", function (e) { if (e.target === picker) picker.close(); });
 
   // columns + tabs
   var noteCounts = {};
+  var CARET = '<svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   function renderCols() {
     $("cols").innerHTML = STEPS.map(function (s, ix) {
-      var d = s.items.filter(function (i) { return i[2] === "done"; }).length;
+      var d = s.items.filter(function (i) { return stOf(i[0]) === "done"; }).length;
       return '<section class="col" data-ix="' + ix + '"><div class="col-head"><h3><small>' + s.name + '</small>' + esc(s.title) + '</h3><span class="frac">' + d + ' of ' + s.items.length + '</span></div>' +
                 '<ul class="it-list">' + s.items.map(function (it) {
-          var st = ST[it[2]], c = noteCounts[it[0]] || 0;
+          var st = ST[stOf(it[0])], c = noteCounts[it[0]] || 0;
           return '<li class="it" data-id="' + it[0] + '" style="--c:' + st.c + ';--soft:' + st.soft + ';--cink:' + st.ink + '">' +
-            '<button class="it-head" type="button" aria-expanded="false"><span>' + esc(it[1]) + '</span><span class="chip">' + st.label + '</span></button>' +
+            '<div class="it-head"><button class="it-title" type="button" aria-expanded="false">' + esc(it[1]) + '</button>' +
+            '<button class="chip" type="button" disabled aria-label="Status: ' + st.label + '. Change status of ' + esc(it[1]) + '"><span class="cl">' + st.label + '</span>' + CARET + '</button></div>' +
             '<div class="it-body"><div class="facts">' + factBox(it, "have") + factBox(it, "left") + '</div>' +
             '<div class="it-foot"><button class="note-btn" type="button" data-note="' + it[0] + '">Notes' + (c ? ' <span class="cnt">' + c + '</span>' : ' +') + '</button></div></div></li>';
         }).join("") + '</ul></section>';
@@ -1080,13 +1461,11 @@
     [].forEach.call($("tabs2").children, function (b, j) { b.setAttribute("aria-selected", j === ix ? "true" : "false"); });
     [].forEach.call($("cols").children, function (c, j) { c.hidden = j !== ix; });
   }
-  $("tabs2").innerHTML = STEPS.map(function (s, ix) {
-    var d = s.items.filter(function (i) { return i[2] === "done"; }).length;
-    return '<button type="button" role="tab" data-ix="' + ix + '"><span class="sn">' + s.name + '</span><span class="st">' + esc(s.title) + '</span><span class="sf">' + d + ' of ' + s.items.length + ' done</span><span class="sb"><i style="width:' + Math.round(100 * d / s.items.length) + '%"></i></span></button>';
-  }).join("");
   $("tabs2").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) showTab(curTab === +b.dataset.ix ? -1 : +b.dataset.ix); });
   $("cols").addEventListener("click", function (e) {
     var nb = e.target.closest(".note-btn"); if (nb) { openNotes(nb.dataset.note); return; }
+    var pk = e.target.closest(".it-head .chip");
+    if (pk) { if (!pk.disabled && db && !PEND[pk.closest(".it").dataset.id]) openPicker(pk.closest(".it").dataset.id); return; }
     var eb = e.target.closest("[data-ed]");
     if (eb) { if (eb.dataset.ed === "save") commit(); else if (eb.dataset.ed === "cancel") cancelEd(); else restoreEd(); return; }
     var fa = e.target.closest(".fact");
@@ -1096,8 +1475,8 @@
     }
     var h = e.target.closest(".it-head"); if (!h) return;
     var li = h.parentNode, open = !li.classList.contains("open");
-    li.parentNode.querySelectorAll(".it.open").forEach(function (x) { x.classList.remove("open"); x.firstChild.setAttribute("aria-expanded", "false"); });
-    if (open) { li.classList.add("open"); h.setAttribute("aria-expanded", "true"); }
+    li.parentNode.querySelectorAll(".it.open").forEach(function (x) { x.classList.remove("open"); x.querySelector(".it-title").setAttribute("aria-expanded", "false"); });
+    if (open) { li.classList.add("open"); li.querySelector(".it-title").setAttribute("aria-expanded", "true"); }
   });
   // Keeps focus in the editor so Cancel/Restore are not preempted by the blur-to-save below.
   $("cols").addEventListener("mousedown", function (e) { if (e.target.closest("[data-ed]")) e.preventDefault(); });
@@ -1121,14 +1500,115 @@
     setTimeout(function () { if (cur && document.hasFocus() && !cur.fa.contains(document.activeElement)) commit(); }, 0);
   });
   renderCols();
+  paintStats();
 
   var dash = $("dash");
   // Esc inside the editor cancels the edit, not the whole dashboard.
   dash.addEventListener("cancel", function (e) { if (cur || Date.now() - escAt < 300) e.preventDefault(); });
-  function openDash() { if (!dash.open) { dash.showModal(); if (document.activeElement) document.activeElement.blur(); } }
+  function openDash() { if (!dash.open) { dash.showModal(); if (document.activeElement) document.activeElement.blur(); ringTo(ringTarget, 1200, 250, true); } }
   document.querySelectorAll("[data-open-dash]").forEach(function (b) { b.addEventListener("click", openDash); });
   $("dash-x").addEventListener("click", function () { dash.close(); });
   if (location.hash === "#dashboard") openDash();
+
+  // change alert: banner on entry, plus the Updates sheet with the recent history
+  var CHANGES = [], changesReady = false, seenReady = false, LASTSEEN = null, FIRST = false, WEEK = 7 * 864e5, SEEN_KEY = "ad688-dashboard-last-seen";
+  var updDlg = $("updates"), updMode = "new";
+  // The local copy is keyed by viewer, so two people sharing one browser never hide each other's updates.
+  function lsKey() { return SEEN_KEY + ":" + (ME || "anon"); }
+  function lsGet() { try { return localStorage.getItem(lsKey()); } catch (e) { return null; } }
+  function lsSet(v) { try { localStorage.setItem(lsKey(), v); } catch (e) {} }
+  function seenDoc() { return db && ME ? db.collection("data/users/" + ME).doc("dashboard") : null; }
+  function newest(a, b) { return a && b ? (Date.parse(a) >= Date.parse(b) ? a : b) : (a || b); }
+  function loadSeen() {
+    var d = seenDoc(), p = d ? d.get().then(function (sn) { var v = sn.exists && sn.data(); return v && typeof v.lastSeen === "string" ? v.lastSeen : null; }).catch(function () { return null; }) : Promise.resolve(null);
+    p.then(function (v) {
+      LASTSEEN = newest(v, lsGet());
+      if (!LASTSEEN) { FIRST = true; LASTSEEN = new Date(Date.now() - WEEK).toISOString(); }
+      seenReady = true; refreshBanner();
+    });
+  }
+  function pending() {
+    if (!seenReady) return [];
+    var t = Date.parse(LASTSEEN);
+    return CHANGES.filter(function (c) { return Date.parse(c.at) > t && !(ME && c.by === ME) && !has(OWN, c.id); });
+  }
+  function plural(n, one, many) { return n + " " + (n === 1 ? one : many); }
+  function refreshBanner() {
+    if (!db || !changesReady || !seenReady) return;
+    var list = pending(), st = list.filter(function (c) { return c.kind === "status"; }).length, ds = list.length - st;
+    var parts = []; if (st) parts.push(plural(st, "status change", "status changes")); if (ds) parts.push(plural(ds, "description change", "description changes"));
+    [].forEach.call(document.querySelectorAll(".upd-banner"), function (b) {
+      b.hidden = !list.length;
+      b.querySelector(".ub-n").textContent = list.length;
+      b.querySelector(".ub-t").textContent = plural(list.length, "checklist update", "checklist updates") + (FIRST ? " in the last 7 days" : " since your last visit");
+      b.querySelector(".ub-s").textContent = parts.join(", ");
+    });
+    $("upd-top").classList.toggle("none", !list.length);
+    [].forEach.call(document.querySelectorAll("[data-upd-all]"), function (b) {
+      b.hidden = false;
+      var g = b.querySelector(".badge"); g.hidden = !list.length; g.textContent = list.length;
+    });
+    if (updDlg.open) renderUpdates();
+  }
+  function plainText(t) { return esc(t == null ? "" : t).replace(/\[\[(.+?)\|https:\/\/[^\]\s]+\]\]/g, "$1"); }
+  function chipHtml(k) {
+    var st = has(ST, k) ? ST[k] : null;
+    return st ? '<span class="chip" style="--c:' + st.c + ';--soft:' + st.soft + ';--cink:' + st.ink + '">' + st.label + '</span>' : '<span class="chip">' + esc(k == null ? "Unknown" : k) + '</span>';
+  }
+  var ARROW = '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 8h9M8.5 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  function renderUpdates() {
+    var fresh = pending(), isNew = {};
+    fresh.forEach(function (c) { isNew[c.item + "|" + c.at + "|" + c.field] = 1; });
+    var list = updMode === "new" ? fresh.slice(0, 100) : CHANGES.slice(0, 30);
+    $("upd-k").textContent = updMode === "new" ? (FIRST ? "In the last 7 days" : "Since your last visit") : "Recent changes";
+    $("upd-title").textContent = updMode === "new" ? plural(list.length, "update", "updates") : "Checklist updates";
+    $("upd-list").innerHTML = list.length ? list.map(function (c) {
+      var body = c.kind === "status"
+        ? '<div class="uc-chg">' + chipHtml(c.from) + ARROW + chipHtml(c.to) + '</div>'
+        : '<div class="uc-fl">' + esc(has(F, c.field) ? F[c.field][1] : "Description") + '</div><div class="uc-tx old"><small>Before</small><s>' + plainText(c.from) + '</s></div><div class="uc-tx now"><small>Now</small>' + plainText(c.to) + '</div>';
+      return '<li class="uc' + (isNew[c.item + "|" + c.at + "|" + c.field] ? " new" : "") + '"><div class="uc-top"><span class="uc-tag ' + (c.kind === "status" ? "st" : "ds") + '">' + (c.kind === "status" ? "Status" : "Description") + '</span><span>' + esc(when(c.at)) + '</span></div>' +
+        '<div class="uc-title">' + esc(TITLE[c.item]) + '</div><div class="uc-meta">' + esc(STEPNAME[c.item]) + ' \u00b7 by ' + esc(nameOf(c.by)) + '</div>' + body + '</li>';
+    }).join("") : '<li class="empty">' + (updMode === "new" ? "Nothing new." : "No updates yet. Changes to a status or a description show up here.") + '</li>';
+    $("upd-got").textContent = fresh.length ? "Got it" : "Close";
+  }
+  function openUpdates(mode) { updMode = mode; renderUpdates(); if (!updDlg.open) updDlg.showModal(); $("upd-list").scrollTop = 0; }
+  function markSeen() {
+    var t = Date.now(); CHANGES.forEach(function (c) { var x = Date.parse(c.at); if (x > t) t = x; });
+    LASTSEEN = new Date(t).toISOString(); FIRST = false; lsSet(LASTSEEN);
+    var d = seenDoc(); if (d) d.set({ lastSeen: LASTSEEN }).catch(function () {});
+    refreshBanner();
+  }
+  [].forEach.call(document.querySelectorAll("[data-upd-new]"), function (b) { b.addEventListener("click", function () { openUpdates("new"); }); });
+  [].forEach.call(document.querySelectorAll("[data-upd-all]"), function (b) { b.addEventListener("click", function () { openUpdates("all"); }); });
+  $("upd-x").addEventListener("click", function () { updDlg.close(); });
+  $("upd-got").addEventListener("click", function () { if (pending().length) markSeen(); updDlg.close(); });
+
+
+  // project difference analysis (static content, works without the database)
+  var MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  function diffDate(s) { var p = String(s).split("-"); return MON[+p[1] - 1] + " " + (+p[2]) + ", " + p[0]; }
+  var DCHEV = '<svg class="df-chev" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 7l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var diffDlg = $("diff");
+  function diffStatus(d) {
+    var s = d.status || [];
+    function lead(v) { return '<div class="df-stl">Status change to checklist item: <b>' + v + '</b></div>'; }
+    if (!s.length) return '<div class="df-st">' + lead(d.statusNote ? "Not recorded" : "No") + (d.statusNote ? '<div class="df-note">' + esc(d.statusNote) + '</div>' : "") + '</div>';
+    var changed = s.some(function (r) { return r.from !== r.to; });
+    return '<div class="df-st">' + lead(changed ? "Yes" : "No") + s.map(function (r) {
+      var same = r.from === r.to;
+      return '<div class="df-sr' + (same ? " same" : "") + '"><div class="df-sn">' + esc(has(TITLE, r.item) ? TITLE[r.item] : r.item) + '</div><div class="df-sc">' + (same ? chipHtml(r.to) + '<span class="df-nc">no change</span>' : chipHtml(r.from) + ARROW + chipHtml(r.to)) + '</div><div class="df-sw"><b>Why:</b> ' + esc(r.why) + '</div></div>';
+    }).join("") + '</div>';
+  }
+  $("diff-list").innerHTML = DIFFS.map(function (d, i) { return { d: d, i: i }; })
+    .sort(function (a, b) { return a.d.date < b.d.date ? 1 : a.d.date > b.d.date ? -1 : a.i - b.i; })
+    .map(function (x, n) {
+      var d = x.d;
+      return '<details class="df"' + (n === 0 ? " open" : "") + '><summary><span class="df-d">' + esc(diffDate(d.date)) + '</span><span class="df-t">' + esc(d.title) + '</span><span class="df-w">by ' + esc(d.who) + '</span>' + DCHEV + '</summary>' +
+        '<div class="df-body"><div class="df-pg"><b>Pages:</b> ' + linkify(d.pages) + '</div><ul>' + d.bullets.map(function (b) { return "<li>" + linkify(b) + "</li>"; }).join("") + '</ul>' + diffStatus(d) + '</div></details>';
+    }).join("");
+  [].forEach.call(document.querySelectorAll("[data-diff-open]"), function (b) { b.addEventListener("click", function () { if (!diffDlg.open) diffDlg.showModal(); $("diff-list").scrollTop = 0; }); });
+  $("diff-x").addEventListener("click", function () { diffDlg.close(); });
+  diffDlg.addEventListener("click", function (e) { if (e.target === diffDlg) diffDlg.close(); });
 
   // notes (db)
   var notesDlg = $("notes"), sel = $("note-item"), db = null, notes = [], scope = "all", armed = null;
@@ -1140,7 +1620,7 @@
     var list = notes.filter(function (x) { return scope === "all" || x.item === scope; });
     $("notes-list").innerHTML = list.length ? list.map(function (x) {
       return '<li class="note' + (x.status === "resolved" ? " resolved" : "") + '" data-id="' + esc(x.id) + '"><div class="meta2">' +
-        (scope === "all" ? '<span class="tagx">' + esc(TITLE[x.item] || "General") + '</span>' : "") + '<span>' + fmt(x.createdAt) + '</span>' +
+        (scope === "all" ? '<span class="tagx">' + esc(has(TITLE, x.item) ? TITLE[x.item] : "General") + '</span>' : "") + '<span>' + fmt(x.createdAt) + '</span>' +
         (x.status === "resolved" ? '<span>Resolved</span>' : "") + '</div><p>' + esc(x.text) + '</p><div class="acts">' +
         '<button type="button" data-act="toggle">' + (x.status === "resolved" ? "Reopen" : "Mark resolved") + '</button>' +
         '<button type="button" class="del' + (armed === x.id ? " arm" : "") + '" data-act="del">' + (armed === x.id ? "Tap again to delete" : "Delete") + '</button></div></li>';
@@ -1183,20 +1663,33 @@
     db = d;
     if (!db) { $("note-hint").textContent = "Notes save once this page is open on claude.ai."; renderNotes(); return; }
     $("note-hint").textContent = ""; $("note-save").disabled = false;
+    db.collection("statuses").onSnapshot(function (snap) {
+      STATUSES = {};
+      snap.docs.forEach(function (d) { var v = d.data(); if (v && has(BYID, v.item) && has(ST, v.status)) STATUSES[v.item] = { status: v.status, by: v.updatedBy || null, at: v.updatedAt || "" }; });
+      paintStats(); paintChips(); resolveNames();
+    }, function () {});
+    db.collection("changes").orderBy("at", "desc").limit(200).onSnapshot(function (snap) {
+      CHANGES = [];
+      snap.docs.forEach(function (d) {
+        var v = d.data();
+        if (v && has(BYID, v.item) && (v.kind === "status" || v.kind === "description") && typeof v.at === "string") CHANGES.push({ id: d.id, item: v.item, kind: v.kind, field: v.field, from: v.from, to: v.to, by: v.by || null, at: v.at });
+      });
+      changesReady = true; refreshBanner(); resolveNames();
+    }, function () {});
     db.collection("edits").onSnapshot(function (snap) {
       EDITS = {};
-      snap.docs.forEach(function (d) { var v = d.data(); if (v && typeof v.text === "string" && BYID[v.item] && F[v.field]) EDITS[v.item + "-" + v.field] = { text: v.text, by: v.updatedBy || null, at: v.updatedAt || "" }; });
+      snap.docs.forEach(function (d) { var v = d.data(); if (v && typeof v.text === "string" && has(BYID, v.item) && has(F, v.field)) EDITS[v.item + "-" + v.field] = { text: v.text, by: v.updatedBy || null, at: v.updatedAt || "" }; });
       repaintAll(); resolveNames();
     }, function () {});
     (window.claude.use("user") || Promise.resolve(null)).then(function (u) {
-      who = u; if (!u) { $("cols").classList.add("can-edit"); return; }
+      who = u; if (!u) { setEditable(); return; }
       return Promise.all([u.id(), u.can("data.write")]).then(function (r) {
         ME = r[0];
         // null means the platform did not say; offer editing and let a refused write explain itself.
-        if (r[1] !== false) $("cols").classList.add("can-edit"); else $("view-only").hidden = false;
+        if (r[1] !== false) setEditable(); else $("view-only").hidden = false;
         repaintAll(); resolveNames();
       });
-    }).catch(function () { $("cols").classList.add("can-edit"); });
+    }).catch(function () { setEditable(); }).then(loadSeen);
     db.collection("notes").orderBy("createdAt", "desc").onSnapshot(function (snap) {
       notes = snap.docs.map(function (d) { var v = d.data(); return { id: d.id, item: v.item, text: v.text, status: v.status, createdAt: v.createdAt }; });
       renderNotes();
