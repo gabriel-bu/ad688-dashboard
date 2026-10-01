@@ -902,8 +902,8 @@
   .df[open] > summary .df-chev { transform: rotate(180deg); }
   .df[open] > summary { border-bottom: 1px solid var(--line); }
   .df-body { padding: 12px 14px 14px; font-size: 14px; line-height: 1.55; overflow-wrap: anywhere; }
-  .df-pg { color: var(--ink-2); }
-  .df-st { margin-top: 12px; border-radius: 10px; background: var(--tint); padding: 10px 12px; }
+  .df-pg { color: var(--ink-2); margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
+  .df-st { margin-top: 0; border-radius: 10px; background: var(--tint); padding: 10px 12px; }
   .df-stl { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
   .df-stl b { color: var(--ink); }
   .df-sr { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
@@ -1113,77 +1113,75 @@
   var CHECKED = "Checked Oct 1, 2026 against the team site and repo";
 
   // Project Difference Analysis: changes to the team Quarto site, newest first. Claude maintains this list.
-  // Each entry: date (ISO), who, title, pages [[Label|url]], bullets (strings, [[Label|url]] links allowed).
+  // Each entry: date (ISO), who, title, status (professor's checklist changes) or statusNote, bullets
+  // (short; "**Label:** text", [[Label|url]] links allowed), link (where to view the details on the team site).
   var DIFFS = [
     { date: "2026-10-01", who: "Gabriel", title: "Market Baseline rebuilt on the 2024 data, with all four charts",
       status: [
-        { item: "s2-4", from: "part", to: "done", why: "Salary, location, experience and remote are now all charted, built on the 2024 data that has salary on 13 roles and experience on 22." },
-        { item: "s2-3", from: "done", to: "done", why: "Already done; now rebuilt on the 2024 data so it matches the Skill Gap page." }
+        { item: "s2-4", from: "part", to: "done", why: "All four are now charted on the 2024 data, which has the salary and experience fields the old data lacked." },
+        { item: "s2-3", from: "done", to: "done", why: "Already done; now on the 2024 data so it matches the Skill Gap page." }
       ],
-      pages: "[[Market Baseline|https://gheydt.github.io/ad688group3.github.io/market_baseline.html]]",
       bullets: [
-        "Data: before, the old Step 2 data with 27 mixed data roles (engineers, analysts, scientists, BI). After, the 2024 Step 3 data with the same 29 Data Engineer roles the Skill Gap page uses, so the two pages now agree.",
-        "Employers: before, mostly non-insurers (Amazon, Replit, David's Bridal) that slipped through the old industry filter. After, 7 employers, mostly insurers; State Farm posts 15 of the 29.",
-        "Salary: before, 5 of 27 listed pay, average $163,840, range $93,000 to $280,000, text only. After, 13 of 29, median about $142,230, range $127,000 to $161,625, charted.",
-        "Location: before, 9 of 27 had a state, California led with 2. After, all 29 have a state across 10 states; Texas, Georgia, Wisconsin and Arizona lead with 4 each, mostly State Farm's office footprint.",
-        "Experience: before, not available for any posting. After, 22 of 29 state a minimum; typical is 5 years, range 1 to 8. Charted.",
-        "Remote: before, 12 remote, 4 hybrid, 3 on-site, 8 unknown. After, 9 remote (31%), 20 unstated. Charted.",
-        "Top skills: before, Analytics 59%, Automation 22%, BI 19%. After, Python 86%, Data Analysis 76%, AWS 72%, SQL 62%.",
-        "New disclosures: the 29 postings are 13 distinct jobs (median salary $136,415 counted once each); a Hartford, Wisconsin listing is likely Hartford, Connecticut; why SQL reads 62% here and 76% on Skill Gap."
-      ] },
+        "**Data:** old 27 mixed data roles replaced by the 29 Data Engineer roles the [[Skill Gap|https://gheydt.github.io/ad688group3.github.io/skill_gap_analysis.html]] page uses. [[Details|https://gheydt.github.io/ad688group3.github.io/market_baseline.html#load-the-2024-dataset]]",
+        "**Employers:** now mostly insurers; **State Farm posts 15 of 29**. [[Details|https://gheydt.github.io/ad688group3.github.io/market_baseline.html#top-employers]]",
+        "**Salary:** 5 jobs with pay, now **13**; median about **$142,000**. [[Details|https://gheydt.github.io/ad688group3.github.io/market_baseline.html#salary-distribution]]",
+        "**Location:** now **10 states**, led by TX, GA, WI and AZ. [[Details|https://gheydt.github.io/ad688group3.github.io/market_baseline.html#location-patterns]]",
+        "**Experience:** was missing, now **22 of 29**; typical minimum **5 years**. [[Details|https://gheydt.github.io/ad688group3.github.io/market_baseline.html#experience-requirements]]",
+        "**Skills:** top skills now **Python, data analysis, AWS, SQL**. [[Details|https://gheydt.github.io/ad688group3.github.io/market_baseline.html#top-specialized-skills]]",
+        "**Limits added:** 29 postings are **13 distinct jobs**. [[Details|https://gheydt.github.io/ad688group3.github.io/market_baseline.html#key-findings-and-limitations]]"
+      ],
+      link: "[[Market Baseline page|https://gheydt.github.io/ad688group3.github.io/market_baseline.html]]" },
     { date: "2026-10-01", who: "Gabriel", title: "Final Recommendations draft added",
       status: [
-        { item: "s3-3", from: "miss", to: "part", why: "A draft upskilling plan now exists. It stays partial until the team rewrites it and adds the role, location and employer recommendations the final build requires." }
+        { item: "s3-3", from: "miss", to: "part", why: "A draft now exists. It stays partial until the team rewrites it and adds the final-build recommendations." }
       ],
-      pages: "[[Final Recommendations|https://gheydt.github.io/ad688group3.github.io/final_recommendations.html]]",
       bullets: [
-        "Before: the tab was an empty page. After: a draft upskilling plan marked for team review.",
-        "First skill per person from the skill ratings: Gabriel Python, Genevieve cloud (AWS), Haben Spark; Git for everyone through reviewed pull requests.",
-        "Resources, a timeline through Oct 14, and who covers which gap until each person reaches rating 3.",
-        "Still to add for the final version: role, location and employer recommendations, and team contributions."
-      ] },
+        "**Before:** empty tab. **After:** draft upskilling plan for team review.",
+        "**First skills:** Gabriel Python, Genevieve AWS, Haben Spark; Git for everyone. [[Details|https://gheydt.github.io/ad688group3.github.io/final_recommendations.html#first-skill-per-person]]",
+        "**Timeline:** through Oct 14, then re-rate Nov 15 and Dec 15. [[Details|https://gheydt.github.io/ad688group3.github.io/final_recommendations.html#timeline]]",
+        "**Still to add:** role, location and employer picks, and team contributions. [[Details|https://gheydt.github.io/ad688group3.github.io/final_recommendations.html#still-to-add-for-the-final-version]]"
+      ],
+      link: "[[Final Recommendations page|https://gheydt.github.io/ad688group3.github.io/final_recommendations.html]]" },
     { date: "2026-09-28", who: "Genevieve", title: "Data Preparation and Career Evaluation filled in",
-      statusNote: "Checklist first scored on Sep 29, after this change: industry code Done, cleaning pipeline Partial. Earlier status not recorded.",
-      pages: "[[Data Preparation|https://gheydt.github.io/ad688group3.github.io/data_preparation.html]], [[Career Evaluation|https://gheydt.github.io/ad688group3.github.io/career_evaluation.html]]",
+      statusNote: "First scored on Sep 29, after this change: industry code Done, cleaning pipeline Partial.",
       bullets: [
-        "Data Preparation went from a title to a write-up of the industry filter, the job titles matched, the fields kept, and how duplicates and missing values were handled.",
-        "Career Evaluation now names industry code 5241, explains why insurance, and lists five sources.",
-        "Known issue: the Data Preparation bullet lists run together into one line."
-      ] },
+        "**Data Preparation:** filter, fields kept, duplicates and missing values written up. [[Details|https://gheydt.github.io/ad688group3.github.io/data_preparation.html#data-filtering]]",
+        "**Career Evaluation:** names code 5241, explains why insurance, lists sources. [[Details|https://gheydt.github.io/ad688group3.github.io/career_evaluation.html#sources]]",
+        "**Known issue:** bullet lists on Data Preparation run together."
+      ],
+      link: "[[Data Preparation page|https://gheydt.github.io/ad688group3.github.io/data_preparation.html]]" },
     { date: "2026-09-22", who: "Haben", title: "Skill Gap Analysis built, team ratings added",
       statusNote: "Before the checklist was tracked.",
-      pages: "[[Skill Gap Analysis|https://gheydt.github.io/ad688group3.github.io/skill_gap_analysis.html]]",
       bullets: [
-        "New page comparing the team's 1 to 5 ratings on 10 skills with how often 29 job posts ask for each.",
-        "Benchmark table: team average, market demand, gap and priority per skill. Biggest gaps: cloud, Python, Git, Spark.",
-        "Team ratings file added; small trim to the Market Baseline page."
-      ] },
+        "**New page:** team ratings on 10 skills vs how often 29 jobs ask for each. [[Details|https://gheydt.github.io/ad688group3.github.io/skill_gap_analysis.html#scoring-method]]",
+        "**Biggest gaps:** cloud, Python, Git, Spark. [[Details|https://gheydt.github.io/ad688group3.github.io/skill_gap_analysis.html#key-findings]]"
+      ],
+      link: "[[Skill Gap Analysis page|https://gheydt.github.io/ad688group3.github.io/skill_gap_analysis.html]]" },
     { date: "2026-09-21", who: "Genevieve and Gabriel", title: "Site menu restructured, 2024 dataset documented",
       statusNote: "Before the checklist was tracked.",
-      pages: "[[Home|https://gheydt.github.io/ad688group3.github.io/index.html]]",
       bullets: [
-        "Genevieve: menu reorganized into 8 tabs in project order; Predictive Modeling tab added (still empty).",
-        "Gabriel: Step 3 notebook added that loads and checks the 2024 dataset and exports the 1,908 insurance postings used by Skill Gap and now Market Baseline."
-      ] },
+        "**Menu:** 8 tabs in project order; Predictive Modeling tab added (still empty).",
+        "**2024 data:** Step 3 notebook loads and checks it; 1,908 insurance postings. [[Details|https://github.com/gheydt/ad688group3.github.io/tree/main/notebooks]]"
+      ],
+      link: "[[Home page|https://gheydt.github.io/ad688group3.github.io/index.html]]" },
     { date: "2026-09-15", who: "Haben", title: "Market Baseline first version (old data)",
       statusNote: "Before the checklist was tracked.",
-      pages: "[[Market Baseline|https://gheydt.github.io/ad688group3.github.io/market_baseline.html]]",
       bullets: [
-        "First market snapshot: 27 data-related postings from the Step 2 data.",
-        "Salary and location as text tables, experience marked unavailable, remote and skills summarized.",
-        "Replaced on Oct 1 by the 2024 version above."
-      ] },
+        "**First snapshot:** 27 data postings from the Step 2 data.",
+        "**Gaps:** salary on 5 jobs, no experience data. Replaced Oct 1."
+      ],
+      link: "[[Market Baseline page|https://gheydt.github.io/ad688group3.github.io/market_baseline.html]]" },
     { date: "2026-09-14", who: "Genevieve and Gabriel", title: "Page structure and Step 2 notebook",
       statusNote: "Before the checklist was tracked.",
-      pages: "[[Project Overview|https://gheydt.github.io/ad688group3.github.io/introduction.html]]",
       bullets: [
-        "Genevieve: page structure for the project tabs, page titles, and the Project Overview format.",
-        "Gabriel: Step 2 notebook that filters the class dataset to insurance carriers (code 5241), with its outputs."
-      ] },
+        "**Pages:** project tabs, titles and Project Overview format.",
+        "**Step 2 data:** notebook filters the class data to insurance carriers (5241). [[Details|https://github.com/gheydt/ad688group3.github.io/tree/main/notebooks]]"
+      ],
+      link: "[[Project Overview page|https://gheydt.github.io/ad688group3.github.io/introduction.html]]" },
     { date: "2026-09-03", who: "Genevieve", title: "Team site created",
       statusNote: "Before the checklist was tracked.",
-      pages: "[[Home|https://gheydt.github.io/ad688group3.github.io/index.html]]",
-      bullets: [ "First Quarto render: home page, about page and site style." ] }
+      bullets: [ "**First version:** home page, about page and site style." ],
+      link: "[[Team site home|https://gheydt.github.io/ad688group3.github.io/index.html]]" }
   ];
 
   var $ = function (id) { return document.getElementById(id); };
@@ -1591,7 +1589,7 @@
   var diffDlg = $("diff");
   function diffStatus(d) {
     var s = d.status || [];
-    function lead(v) { return '<div class="df-stl">Status change to checklist item: <b>' + v + '</b></div>'; }
+    function lead(v) { return '<div class="df-stl">Professor’s project checklist, status change: <b>' + v + '</b></div>'; }
     if (!s.length) return '<div class="df-st">' + lead(d.statusNote ? "Not recorded" : "No") + (d.statusNote ? '<div class="df-note">' + esc(d.statusNote) + '</div>' : "") + '</div>';
     var changed = s.some(function (r) { return r.from !== r.to; });
     return '<div class="df-st">' + lead(changed ? "Yes" : "No") + s.map(function (r) {
@@ -1599,12 +1597,14 @@
       return '<div class="df-sr' + (same ? " same" : "") + '"><div class="df-sn">' + esc(has(TITLE, r.item) ? TITLE[r.item] : r.item) + '</div><div class="df-sc">' + (same ? chipHtml(r.to) + '<span class="df-nc">no change</span>' : chipHtml(r.from) + ARROW + chipHtml(r.to)) + '</div><div class="df-sw"><b>Why:</b> ' + esc(r.why) + '</div></div>';
     }).join("") + '</div>';
   }
+  // Diff bullets allow **bold** on top of the [[Label|url]] links.
+  function mdl(t) { return linkify(t).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>"); }
   $("diff-list").innerHTML = DIFFS.map(function (d, i) { return { d: d, i: i }; })
     .sort(function (a, b) { return a.d.date < b.d.date ? 1 : a.d.date > b.d.date ? -1 : a.i - b.i; })
     .map(function (x, n) {
       var d = x.d;
       return '<details class="df"' + (n === 0 ? " open" : "") + '><summary><span class="df-d">' + esc(diffDate(d.date)) + '</span><span class="df-t">' + esc(d.title) + '</span><span class="df-w">by ' + esc(d.who) + '</span>' + DCHEV + '</summary>' +
-        '<div class="df-body"><div class="df-pg"><b>Pages:</b> ' + linkify(d.pages) + '</div><ul>' + d.bullets.map(function (b) { return "<li>" + linkify(b) + "</li>"; }).join("") + '</ul>' + diffStatus(d) + '</div></details>';
+        '<div class="df-body">' + diffStatus(d) + '<ul>' + d.bullets.map(function (b) { return "<li>" + mdl(b) + "</li>"; }).join("") + '</ul><div class="df-pg"><b>View details:</b> ' + linkify(d.link) + '</div></div></details>';
     }).join("");
   [].forEach.call(document.querySelectorAll("[data-diff-open]"), function (b) { b.addEventListener("click", function () { if (!diffDlg.open) diffDlg.showModal(); $("diff-list").scrollTop = 0; }); });
   $("diff-x").addEventListener("click", function () { diffDlg.close(); });
