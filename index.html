@@ -887,7 +887,9 @@
 
   /* project difference analysis sheet (reuses the updates sheet frame) */
   .diff-sub { margin-top: 2px; font-size: 13px; color: var(--ink-3); }
-  #diff-list { display: flex; flex-direction: column; gap: 10px; }
+  #diff-list { display: flex; flex-direction: column; gap: 10px; overflow-x: hidden; }
+  #diff-list > .df { min-width: 0; max-width: 100%; }
+  dialog.updates { max-width: 100vw; overflow-x: hidden; }
   .df { flex: none; background: #fff; border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; margin-top: 0; padding-top: 0; }
   .df > summary { color: var(--ink); font-weight: 400; }
   .df > summary::after, .df[open] > summary::after { content: none; }
@@ -902,7 +904,7 @@
   .df[open] > summary .df-chev { transform: rotate(180deg); }
   .df[open] > summary { border-bottom: 1px solid var(--line); }
   .df-body { padding: 12px 14px 14px; font-size: 14px; line-height: 1.55; overflow-wrap: anywhere; }
-  .df-pg { color: var(--ink-2); margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
+  .df-pg { color: var(--ink-2); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line-2); font-size: 14px; }
   .df-st { margin-top: 0; border-radius: 10px; background: var(--tint); padding: 10px 12px; }
   .df-stl { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
   .df-stl b { color: var(--ink); }
@@ -1605,7 +1607,7 @@
     .map(function (x, n) {
       var d = x.d;
       return '<details class="df"' + (n === 0 ? " open" : "") + '><summary><span class="df-d">' + esc(diffDate(d.date)) + '</span><span class="df-t">' + esc(d.title) + '</span><span class="df-w">by ' + esc(d.who) + '</span>' + DCHEV + '</summary>' +
-        '<div class="df-body">' + diffStatus(d) + '<ul>' + d.bullets.map(function (b) { return "<li>" + mdl(b) + "</li>"; }).join("") + '</ul><div class="df-pg"><b>Pages affected</b><ol>' + d.pages.map(function (x) { return "<li>" + linkify(x) + "</li>"; }).join("") + '</ol></div></div></details>';
+        '<div class="df-body">' + diffStatus(d).replace(/<\/div>$/, '<div class="df-pg"><b>Pages affected</b><ol>' + d.pages.map(function (x) { return "<li>" + linkify(x) + "</li>"; }).join("") + '</ol></div></div>') + '<ul>' + d.bullets.map(function (b) { return "<li>" + mdl(b) + "</li>"; }).join("") + '</ul></div></details>';
     }).join("");
   [].forEach.call(document.querySelectorAll("[data-diff-open]"), function (b) { b.addEventListener("click", function () { if (!diffDlg.open) diffDlg.showModal(); $("diff-list").scrollTop = 0; }); });
   $("diff-x").addEventListener("click", function () { diffDlg.close(); });
