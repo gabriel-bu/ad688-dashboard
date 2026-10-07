@@ -1113,12 +1113,19 @@
       ["s3-4", "Website readable and logical", "part", "A clear 8-tab menu in project order on our [[team site|https://gheydt.github.io/ad688group3.github.io/index.html]].", "Two tabs are still empty ([[Predictive Modeling|https://gheydt.github.io/ad688group3.github.io/ml_methods.html]], [[Final Recommendations|https://gheydt.github.io/ad688group3.github.io/final_recommendations.html]]). The menu says Exploratory Analysis but [[that page|https://gheydt.github.io/ad688group3.github.io/market_baseline.html]] is titled Market Baseline."]
     ]}
   ];
-  var CHECKED = "Checked Oct 1, 2026 against the team site and repo";
+  var CHECKED = "Checked Oct 6, 2026 against the team site and repo";
 
   // Project Difference Analysis: changes to the team Quarto site, newest first. Claude maintains this list.
   // Each entry: date (ISO), who, title, status (professor's checklist changes) or statusNote, bullets
   // (short; "**Label:** text", [[Label|url]] links allowed), pages (the team-site pages or files the change touched).
   var DIFFS = [
+    { date: "2026-10-05", who: "Genevieve", title: "Site publishing switched to a pinned package list",
+      status: [],
+      bullets: [
+        "**Publishing:** the site now builds from a fixed list of package versions (from the Oct 3 lecture); the build after the change ran clean and the site is live. [[Details|https://github.com/gheydt/ad688group3.github.io/blob/main/requirements-deploy.txt]]",
+        "**Watch:** the list has no Spark or Plotly, so any page that later adds those will fail to publish until they are added. [[Details|https://github.com/gheydt/ad688group3.github.io/blob/main/.github/workflows/quarto-publish.yml]]"
+      ],
+      pages: ["[[requirements-deploy.txt|https://github.com/gheydt/ad688group3.github.io/blob/main/requirements-deploy.txt]]", "[[quarto-publish.yml|https://github.com/gheydt/ad688group3.github.io/blob/main/.github/workflows/quarto-publish.yml]]"] },
     { date: "2026-10-01", who: "Gabriel", title: "Market Baseline rebuilt on the 2024 data, with all four charts",
       status: [
         { item: "s2-4", from: "part", to: "done", why: "All four are now charted on the 2024 data, which has the salary and experience fields the old data lacked." },
