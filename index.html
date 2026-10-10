@@ -19,6 +19,7 @@
      collection "statuses" (doc id = item id; overrides the status in STEPS the same way). Every status
      change and every description save also appends a doc to collection "changes" (item, itemTitle,
      kind status|description, field, from, to, by, at); the entry banner and Updates sheet read it.
+     The "Who does what" boxes live in collection "split" (doc id = person, items = one task per line).
      Each viewer's last-seen time lives in their private data/users/<id>/dashboard doc. None of these
      docs is ever deleted. -->
 <style>
@@ -150,6 +151,17 @@
   .split .card + .card { margin-top: 0; }
   .split h3 { color: var(--azure-deep); }
   .split ul { margin-left: 18px; font-size: 15px; } .split li + li { margin-top: 6px; }
+  /* editable task boxes: saved to db collection "split" (doc id = person), one task per line */
+  .sp { display: flex; flex-direction: column; }
+  .sp-list { flex: 1; }
+  .sp-foot { display: none; align-items: center; gap: 8px; margin-top: 10px; min-height: 30px; }
+  .sp-foot.has-by, .can-edit .sp-foot { display: flex; }
+  .sp-by { flex: 1; min-width: 0; font-size: 12px; color: var(--ink-3); }
+  .sp-by strong { font-weight: 600; color: var(--azure-deep); }
+  .sp textarea { width: 100%; min-height: 120px; font: 16px/1.5 var(--f-body); color: var(--ink); border: 1px solid var(--line-2); border-radius: 10px; padding: 8px 10px; resize: vertical; }
+  .sp textarea:focus { outline: 2px solid var(--azure); outline-offset: 1px; }
+  .sp.editing { box-shadow: 0 0 0 2px var(--azure); }
+  .sp .ed-err { margin-top: 6px; font-size: 12px; color: var(--miss); }
 
   /* deep harbor band: the site's rhythm section */
   .band { background: var(--deep); color: var(--deep-text); margin-top: 36px; padding: 36px 0; background-image: radial-gradient(60% 80% at 85% 0%, rgba(142, 200, 238, 0.14), transparent 70%); }
@@ -291,9 +303,9 @@
   <h2>Who does what for the final</h2>
   <p class="lede">Proposed Oct 10. Each of us picks up the pieces that build on what we already did.</p>
   <div class="split">
-    <div class="card"><h3>Gabriel · Sat and Sun</h3><ul><li>Salary model on the 1,908-post file</li><li>Predictive Modeling page with the plain-English reading</li><li>final_report.qmd and the Word render</li></ul></div>
-    <div class="card"><h3>Haben · Sat and Sun</h3><ul><li>Career Evaluation logic section</li><li>Final Recommendations: roles, locations, employers</li><li>Sources written up in APA style</li></ul></div>
-    <div class="card"><h3>Genevieve · Sun night</h3><ul><li>Slides: final pass and the 5 required pieces</li><li>Contributions section and Module 5/6 standup docs</li><li>Last check that every page publishes</li></ul></div>
+    <div class="card sp" data-who="gabriel"><h3>Gabriel</h3><ul class="sp-list"><li>Salary model on the 1,908-post file</li><li>Predictive Modeling page with the plain-English reading</li><li>final_report.qmd and the Word render</li></ul><div class="sp-foot"></div></div>
+    <div class="card sp" data-who="haben"><h3>Haben</h3><ul class="sp-list"><li>Career Evaluation logic section</li><li>Final Recommendations: roles, locations, employers</li><li>Sources written up in APA style</li></ul><div class="sp-foot"></div></div>
+    <div class="card sp" data-who="genevieve"><h3>Genevieve</h3><ul class="sp-list"><li>Slides: final pass and the 5 required pieces</li><li>Contributions section and Module 5/6 standup docs</li><li>Last check that every page publishes</li></ul><div class="sp-foot"></div></div>
   </div>
 </section>
 
@@ -1339,13 +1351,14 @@
     var ids = [];
     function add(b) { if (b && b !== "claude" && ids.indexOf(b) < 0) ids.push(b); }
     Object.keys(EDITS).forEach(function (k) { add(EDITS[k].by); });
+    Object.keys(SPLIT).forEach(function (k) { add(SPLIT[k].by); });
     Object.keys(STATUSES).forEach(function (k) { add(STATUSES[k].by); });
     CHANGES.forEach(function (c) { add(c.by); });
     if (!ids.length) return;
     who.profiles(ids).then(function (ps) {
       var changed = false;
       ids.forEach(function (id) { var nm = has(ps, id) && ps[id] && ps[id].name; if (nm && NAMES[id] !== nm) { NAMES[id] = nm; changed = true; } });
-      if (changed) { repaintAll(); if (updDlg.open) renderUpdates(); }
+      if (changed) { repaintAll(); paintSplit(); if (updDlg.open) renderUpdates(); }
     });
   }
   function nameOf(by) { return by && by === ME ? "you" : by === "claude" ? "Claude" : (by && has(NAMES, by) && NAMES[by]) || "a teammate"; }
@@ -1435,7 +1448,7 @@
   }
   function logChange(c) { if (db) db.collection("changes").add(c).then(rememberOwn, function () {}); }
   function setEditable() {
-    $("cols").classList.add("can-edit");
+    $("cols").classList.add("can-edit"); $("split-work").classList.add("can-edit");
     [].forEach.call(document.querySelectorAll("#cols .chip"), function (c) { c.disabled = false; });
   }
 
@@ -1660,6 +1673,64 @@
   $("diff-x").addEventListener("click", function () { diffDlg.close(); });
   diffDlg.addEventListener("click", function (e) { if (e.target === diffDlg) diffDlg.close(); });
 
+  // "Who does what" boxes: anyone with edit access rewrites a box, one task per line; the newest save wins and is credited.
+  var SPLIT = {}, SPDEF = {}, spEd = null;
+  [].forEach.call(document.querySelectorAll("#split-work .sp"), function (c) {
+    SPDEF[c.dataset.who] = [].map.call(c.querySelectorAll(".sp-list li"), function (li) { return li.textContent; });
+  });
+  function spItems(w) { return has(SPLIT, w) ? SPLIT[w].items : SPDEF[w]; }
+  function paintSplit() {
+    [].forEach.call(document.querySelectorAll("#split-work .sp"), function (c) {
+      var w = c.dataset.who, e = has(SPLIT, w) ? SPLIT[w] : null;
+      if (spEd === w) return;
+      c.classList.remove("editing");
+      var list = c.querySelector(".sp-list"), foot = c.querySelector(".sp-foot");
+      list.hidden = false;
+      [].forEach.call(c.querySelectorAll("textarea, .ed-bar"), function (n) { n.remove(); });
+      list.innerHTML = spItems(w).map(function (t) { return "<li>" + esc(t) + "</li>"; }).join("");
+      foot.className = "sp-foot" + (e ? " has-by" : "");
+      foot.innerHTML = '<div class="sp-by">' + (e ? 'Updated by <strong>' + esc(nameOf(e.by)) + '</strong>' + (e.at ? " · " + when(e.at) : "") : "") + '</div>' +
+        '<button type="button" class="ed-cue" data-sp="edit" aria-label="Edit tasks for ' + esc(c.querySelector("h3").textContent) + '">' + PEN + '</button>';
+    });
+  }
+  function spOpen(c) {
+    if (spEd) return;
+    var w = c.dataset.who; spEd = w;
+    c.classList.add("editing");
+    c.querySelector(".sp-list").hidden = true; c.querySelector(".sp-foot").className = "sp-foot";
+    var ta = document.createElement("textarea");
+    ta.value = spItems(w).join("\n"); ta.setAttribute("aria-label", "Tasks for " + c.querySelector("h3").textContent + ", one per line");
+    c.insertBefore(ta, c.querySelector(".sp-foot"));
+    var bar = document.createElement("div"); bar.className = "ed-bar";
+    bar.innerHTML = '<span class="hint">One task per line</span>' + (has(SPLIT, w) ? '<button type="button" class="restore" data-sp="restore">Restore original</button>' : "") +
+      '<button type="button" data-sp="cancel">Cancel</button><button type="button" class="save" data-sp="save">Save</button>';
+    c.insertBefore(bar, c.querySelector(".sp-foot"));
+    ta.focus();
+  }
+  function spSave(c, items) {
+    var w = c.dataset.who, before = SPLIT[w], at = new Date().toISOString();
+    spEd = null;
+    if (!items.length || items.join("\n") === spItems(w).join("\n")) { paintSplit(); return; }
+    SPLIT[w] = { items: items, by: ME, at: at }; paintSplit();
+    db.collection("split").doc(w).set({ who: w, items: items, updatedBy: ME, updatedAt: at }).catch(function (e) {
+      if (before) SPLIT[w] = before; else delete SPLIT[w];
+      paintSplit();
+      var er = document.createElement("div"); er.className = "ed-err"; er.setAttribute("role", "alert");
+      er.textContent = e && e.code === "quota_exceeded" ? "The page's storage is full, so this edit did not save." : "That edit did not save. Check your connection, or ask Gabriel for edit access to this page.";
+      c.appendChild(er); setTimeout(function () { er.remove(); }, 9000);
+    });
+  }
+  $("split-work").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-sp]"); if (!b || !db) return;
+    var c = b.closest(".sp"), a = b.dataset.sp;
+    if (a === "edit") spOpen(c);
+    else if (a === "cancel") { spEd = null; paintSplit(); }
+    else if (a === "restore") spSave(c, SPDEF[c.dataset.who]);
+    else spSave(c, c.querySelector("textarea").value.split("\n").map(function (t) { return t.replace(/\s+/g, " ").trim(); }).filter(Boolean));
+  });
+  $("split-work").addEventListener("keydown", function (e) { if (e.key === "Escape" && spEd) { e.preventDefault(); spEd = null; paintSplit(); } });
+  paintSplit();
+
   // notes (db)
   var notesDlg = $("notes"), sel = $("note-item"), db = null, notes = [], scope = "all", armed = null;
   sel.innerHTML = '<option value="general">General note</option>' + STEPS.map(function (s) {
@@ -1726,6 +1797,11 @@
       });
       changesReady = true; refreshBanner(); resolveNames();
     }, function () {});
+    db.collection("split").onSnapshot(function (snap) {
+      SPLIT = {};
+      snap.docs.forEach(function (d) { var v = d.data(); if (v && has(SPDEF, v.who) && Array.isArray(v.items) && v.items.length) SPLIT[v.who] = { items: v.items.filter(function (t) { return typeof t === "string"; }), by: v.updatedBy || null, at: v.updatedAt || "" }; });
+      paintSplit(); resolveNames();
+    }, function () {});
     db.collection("edits").onSnapshot(function (snap) {
       EDITS = {};
       snap.docs.forEach(function (d) { var v = d.data(); if (v && typeof v.text === "string" && has(BYID, v.item) && has(F, v.field)) EDITS[v.item + "-" + v.field] = { text: v.text, by: v.updatedBy || null, at: v.updatedAt || "" }; });
@@ -1737,7 +1813,7 @@
         ME = r[0];
         // null means the platform did not say; offer editing and let a refused write explain itself.
         if (r[1] !== false) setEditable(); else $("view-only").hidden = false;
-        repaintAll(); resolveNames();
+        repaintAll(); paintSplit(); resolveNames();
       });
     }).catch(function () { setEditable(); }).then(loadSeen);
     db.collection("notes").orderBy("createdAt", "desc").onSnapshot(function (snap) {
