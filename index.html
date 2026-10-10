@@ -84,6 +84,11 @@
   .stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px; box-shadow: var(--shadow); }
   .stat b { display: block; font-family: var(--f-display); font-size: 30px; font-weight: 800; line-height: 1.1; }
   .stat span { font-size: 13px; color: var(--ink-2); }
+  button.stat { display: block; width: 100%; font: inherit; color: inherit; text-align: left; cursor: pointer; transition: box-shadow .2s var(--ease-expo), transform .2s var(--ease-expo); }
+  button.stat:hover { box-shadow: 0 8px 20px rgba(20, 36, 51, 0.10); transform: translateY(-1px); }
+  button.stat:focus-visible { outline: 2px solid var(--azure); outline-offset: 2px; }
+  .stat .see { display: block; margin-top: 6px; font-style: normal; font-size: 12px; font-weight: 700; color: var(--azure-deep); }
+  .stat .see::after { content: " \203A"; }
   .stat.ok b { color: var(--ok); } .stat.part b { color: var(--warn); } .stat.no b { color: var(--miss); } .stat.day b { color: var(--azure); }
 
   nav.jump { position: sticky; top: 0; z-index: 5; background: rgba(244, 248, 252, 0.9); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
@@ -279,9 +284,9 @@
     </div>
 
     <div class="stats">
-      <div class="stat ok"><b id="stat-done">8</b><span>items done</span></div>
-      <div class="stat part"><b id="stat-part">4</b><span>partly done</span></div>
-      <div class="stat no"><b id="stat-miss">1</b><span>not started</span></div>
+      <button class="stat ok" type="button" data-kpi="done"><b id="stat-done">8</b><span>items done</span><i class="see">See list</i></button>
+      <button class="stat part" type="button" data-kpi="part"><b id="stat-part">4</b><span>partly done</span><i class="see">See list</i></button>
+      <button class="stat no" type="button" data-kpi="miss"><b id="stat-miss">1</b><span>not started</span><i class="see">See list</i></button>
       <div class="stat day"><b id="days-left">2</b><span id="days-left-l">days to the final (Oct 12)</span></div>
     </div>
   </div>
@@ -729,6 +734,17 @@
   .kpi span { font-size: 12px; color: #c7e4f6; white-space: nowrap; }
   .kpi b { color: #fff; }
   .kpi span::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; background: var(--c); }
+  button.kpi { display: block; width: 100%; font: inherit; color: inherit; text-align: left; cursor: pointer; transition: background .2s; }
+  button.kpi:hover { background: rgba(255, 255, 255, 0.14); }
+  button.kpi:focus-visible { outline: 2px solid var(--d-glow); outline-offset: 2px; }
+  button.kpi span::after { content: " \203A"; color: #9fd8f7; }
+  .kl-it { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; width: 100%; min-height: 56px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; background: #fff; color: var(--ink); text-align: left; font: inherit; cursor: pointer; box-shadow: var(--shadow); }
+  .kl-it:hover { border-color: var(--azure); }
+  .kl-it:focus-visible { outline: 2px solid var(--azure); outline-offset: 2px; }
+  .kl-it small { grid-column: 1 / -1; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sky-ink); }
+  .kl-it b { font-weight: 600; font-size: 15px; line-height: 1.35; }
+  .kl-it .go { grid-column: 1 / -1; font-size: 12px; font-weight: 700; color: var(--azure-deep); }
+  .it.flash { box-shadow: 0 0 0 3px var(--azure), 0 6px 18px rgba(20, 36, 51, 0.05); }
   .kpi.done { --c: #7fc3a4; } .kpi.part { --c: #e0bd72; } .kpi.miss { --c: #e39396; }
   .dash-sub { grid-column: 1 / -1; font-size: 13px; color: #b9daef; }
   @media (min-width: 760px) { .dash-kpis { grid-template-columns: auto 1fr; grid-template-rows: auto auto; } .ring { grid-row: 1 / 3; } .dash-sub { grid-column: 2; } }
@@ -1114,6 +1130,16 @@
   </div>
 </dialog>
 
+<dialog class="updates" id="klist" aria-labelledby="kl-title">
+  <div class="upd-shell">
+    <div class="upd-head">
+      <div><div class="k" id="kl-k"></div><h3 id="kl-title"></h3><div class="diff-sub">Tap an item to jump to it in the dashboard</div></div>
+      <button class="x-btn" id="kl-x" type="button" aria-label="Close list">&times;</button>
+    </div>
+    <ul class="upd-list" id="kl-list"></ul>
+  </div>
+</dialog>
+
 <dialog class="updates" id="diff" aria-labelledby="diff-title">
   <div class="upd-shell">
     <div class="upd-head">
@@ -1319,7 +1345,7 @@
     $("ring").setAttribute("role", "img"); $("ring").setAttribute("aria-label", n.done + " of " + ALL.length + " project items done");
     if (!dash || !dash.open) { cancelAnimationFrame(RING.raf); ringDraw(n.done); } else if (moved) ringTo(n.done, 800);
     $("kpis").innerHTML = ["done", "part", "miss"].map(function (k) {
-      return '<div class="kpi ' + k + '"><b>' + n[k] + '</b><span>' + (k === "done" ? "done" : k === "part" ? "partial" : "missing") + '</span></div>';
+      return '<button type="button" class="kpi ' + k + '" data-kpi="' + k + '" aria-label="' + n[k] + ' ' + (k === "done" ? "done" : k === "part" ? "partial" : "missing") + ' items. Show the list"><b>' + n[k] + '</b><span>' + (k === "done" ? "done" : k === "part" ? "partial" : "missing") + '</span></button>';
     }).join("");
     $("dash-sub").textContent = "Final due Mon Oct 12, 3:59 AM \u00b7 team target Sunday night \u00b7 " + CHECKED;
     ["done", "part", "miss"].forEach(function (k) { var t = $("stat-" + k); if (t) t.textContent = n[k]; });
@@ -1589,6 +1615,39 @@
   document.querySelectorAll("[data-open-dash]").forEach(function (b) { b.addEventListener("click", openDash); });
   $("dash-x").addEventListener("click", function () { dash.close(); });
   if (location.hash === "#dashboard") openDash();
+
+  // Done / partial / missing tiles (hero and dashboard): list the items in that status, then jump to the chosen one.
+  var klDlg = $("klist"), KL = { done: "Done", part: "Partial", miss: "Missing" };
+  function openKl(k) {
+    var items = ALL.filter(function (it) { return stOf(it[0]) === k; });
+    $("kl-k").textContent = "Checklist";
+    $("kl-title").textContent = items.length + " " + KL[k].toLowerCase() + (items.length === 1 ? " item" : " items");
+    $("kl-list").innerHTML = items.length ? items.map(function (it) {
+      return '<li><button type="button" class="kl-it" data-go="' + it[0] + '"><small>' + esc(STEPNAME[it[0]]) + '</small><b>' + esc(TITLE[it[0]]) + '</b>' + chipHtml(k) + '<span class="go">Open in dashboard \u203A</span></button></li>';
+    }).join("") : '<li class="empty">Nothing here right now.</li>';
+    if (!klDlg.open) klDlg.showModal();
+    $("kl-list").scrollTop = 0;
+  }
+  function goItem(id) {
+    var ix = -1;
+    STEPS.forEach(function (st, i) { st.items.forEach(function (it) { if (it[0] === id) ix = i; }); });
+    if (klDlg.open) klDlg.close();
+    openDash();
+    showTab(ix);
+    var li = document.querySelector('#cols .it[data-id="' + id + '"]'); if (!li) return;
+    li.parentNode.querySelectorAll(".it.open").forEach(function (x) { x.classList.remove("open"); x.querySelector(".it-title").setAttribute("aria-expanded", "false"); });
+    li.classList.add("open"); li.querySelector(".it-title").setAttribute("aria-expanded", "true");
+    setTimeout(function () {
+      li.scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "start" });
+      li.classList.add("flash"); setTimeout(function () { li.classList.remove("flash"); }, 1800);
+    }, 60);
+  }
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest("[data-kpi]"); if (t) { openKl(t.dataset.kpi); return; }
+    var g = e.target.closest("[data-go]"); if (g) goItem(g.dataset.go);
+  });
+  $("kl-x").addEventListener("click", function () { klDlg.close(); });
+  klDlg.addEventListener("click", function (e) { if (e.target === klDlg) klDlg.close(); });
 
   // change alert: banner on entry, plus the Updates sheet with the recent history
   var CHANGES = [], changesReady = false, seenReady = false, LASTSEEN = null, FIRST = false, WEEK = 7 * 864e5, SEEN_KEY = "ad688-dashboard-last-seen";
