@@ -765,8 +765,16 @@
   .it-list { list-style: none; display: grid; gap: 10px; }
   .it { position: relative; background: #fff; border-radius: 16px; border: 1px solid rgba(20, 36, 51, 0.08); box-shadow: 0 1px 2px rgba(20, 36, 51, 0.04), 0 6px 18px rgba(20, 36, 51, 0.05); overflow: hidden; transition: box-shadow .3s var(--ease-expo), transform .3s var(--ease-expo); }
   .it:hover { box-shadow: 0 2px 4px rgba(20, 36, 51, 0.05), 0 14px 30px rgba(20, 36, 51, 0.09); }
-  .it-head { width: 100%; display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 0 14px 0 0; min-height: 58px; cursor: pointer; }
-  .it-title { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 14px 0 14px 16px; min-height: 58px; font: 600 15px/1.35 var(--f-body); color: var(--ink); cursor: pointer; }
+  .ck { display: none !important; } .it-head { width: 100%; display: grid; grid-template-columns: 0 1fr auto; gap: 10px; align-items: center; padding: 0 14px 0 0; min-height: 58px; cursor: pointer; }
+  .ck { position: relative; display: grid; place-items: center; width: 24px; height: 24px; margin-left: 16px; padding: 0; border: 2px solid var(--line-2); border-radius: 7px; background: #fff; color: #fff; cursor: pointer; transition: background .2s, border-color .2s; }
+  .ck::after { content: ''; position: absolute; inset: -10px; }
+  .ck svg { width: 14px; height: 14px; opacity: 0; }
+  .ck[aria-checked="true"] { background: var(--s-done); border-color: var(--s-done); }
+  .ck[aria-checked="true"] svg { opacity: 1; }
+  .ck:disabled { cursor: default; opacity: .55; }
+  .ck:focus-visible { outline: 2px solid var(--azure); outline-offset: 2px; }
+  .it.is-done .it-title { color: var(--ink-3); text-decoration: line-through; text-decoration-color: rgba(86, 111, 133, 0.5); }
+  .it-title { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 14px 0 14px 12px; min-height: 58px; font: 600 15px/1.35 var(--f-body); color: var(--ink); cursor: pointer; }
   .chip { display: inline-flex; align-items: center; gap: 6px; font-family: var(--f-body); font-size: 12px; font-weight: 700; line-height: 1.2; padding: 4px 10px; border: 0; border-radius: 999px; background: var(--soft); color: var(--cink); white-space: nowrap; }
   .chip::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--c); }
   .chip svg { display: none; }
@@ -1332,6 +1340,8 @@
       var id = li.dataset.id, k = stOf(id), st = ST[k], chip = li.querySelector(".chip"), busy = !!PEND[id];
       li.style.setProperty("--c", st.c); li.style.setProperty("--soft", st.soft); li.style.setProperty("--cink", st.ink);
       li.classList.toggle("saving", busy);
+      li.classList.toggle("is-done", k === "done");
+      var ck = li.querySelector(".ck"); ck.setAttribute("aria-checked", k === "done" ? "true" : "false"); ck.setAttribute("aria-label", (k === "done" ? "Completed: " : "Mark complete: ") + TITLE[id]);
       chip.querySelector(".cl").textContent = busy ? st.label + " (saving...)" : st.label;
       if (busy) chip.setAttribute("aria-busy", "true"); else chip.removeAttribute("aria-busy");
       chip.setAttribute("aria-label", busy ? "Saving the status change for " + TITLE[id] + ". Wait a moment before changing it again." : "Status: " + st.label + ". Change status of " + TITLE[id]);
@@ -1339,7 +1349,7 @@
   }
 
   // in-place edits of "What we have" / "What is left": saved to db collection "edits", they override STEPS
-  var F = { have: [3, "What we have"], left: [4, "What is left"] }, EDITS = {}, cur = null, escAt = 0;
+  var F = { title: [1, "Task"], have: [3, "What we have"], left: [4, "What is left"] }, EDITS = {}, cur = null, escAt = 0;
   // EDITS[key] = { text, by, at }; `by` is a viewer id (or "claude"), resolved to a name at render time.
   var who = null, ME = null, NAMES = { claude: "Claude" };
   function when(iso) { try { return new Date(iso).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); } catch (e) { return ""; } }
@@ -1376,7 +1386,9 @@
   function factBox(it, f) { return '<div class="fact' + (f === "left" ? " left" : "") + '" data-f="' + f + '">' + factInner(it[0], f) + '</div>'; }
   function paintFact(fa, err) {
     fa.classList.remove("editing");
-    fa.innerHTML = factInner(fa.closest(".it").dataset.id, fa.dataset.f) + (err ? '<div class="ed-err">' + err + '</div>' : "");
+    var li = fa.closest(".it"), id = li.dataset.id;
+    fa.innerHTML = factInner(id, fa.dataset.f) + (err ? '<div class="ed-err">' + err + '</div>' : "");
+    if (fa.dataset.f === "title") { TITLE[id] = valOf(id, "title"); li.querySelector(".it-title").textContent = TITLE[id]; }
   }
   // Serializes the edited box back to the STEPS text format, keeping links as [[Label|url]].
   function toSrc(node) {
@@ -1449,7 +1461,7 @@
   function logChange(c) { if (db) db.collection("changes").add(c).then(rememberOwn, function () {}); }
   function setEditable() {
     $("cols").classList.add("can-edit"); $("split-work").classList.add("can-edit");
-    [].forEach.call(document.querySelectorAll("#cols .chip"), function (c) { c.disabled = false; });
+    [].forEach.call(document.querySelectorAll("#cols .chip, #cols .ck"), function (c) { c.disabled = false; });
   }
 
   // tap a status chip: pick Done, Partial or Missing in a bottom sheet
@@ -1506,10 +1518,11 @@
       return '<section class="col" data-ix="' + ix + '"><div class="col-head"><h3><small>' + s.name + '</small>' + esc(s.title) + '</h3><span class="frac">' + d + ' of ' + s.items.length + '</span></div>' +
                 '<ul class="it-list">' + s.items.map(function (it) {
           var st = ST[stOf(it[0])], c = noteCounts[it[0]] || 0;
-          return '<li class="it" data-id="' + it[0] + '" style="--c:' + st.c + ';--soft:' + st.soft + ';--cink:' + st.ink + '">' +
-            '<div class="it-head"><button class="it-title" type="button" aria-expanded="false">' + esc(it[1]) + '</button>' +
+          return '<li class="it' + (stOf(it[0]) === "done" ? " is-done" : "") + '" data-id="' + it[0] + '" style="--c:' + st.c + ';--soft:' + st.soft + ';--cink:' + st.ink + '">' +
+            '<div class="it-head"><button class="ck" type="button" role="checkbox" aria-checked="' + (stOf(it[0]) === "done") + '" disabled aria-label="Mark complete: ' + esc(valOf(it[0], "title")) + '"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2.5 7.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
+            '<button class="it-title" type="button" aria-expanded="false">' + esc(valOf(it[0], "title")) + '</button>' +
             '<button class="chip" type="button" disabled aria-label="Status: ' + st.label + '. Change status of ' + esc(it[1]) + '"><span class="cl">' + st.label + '</span>' + CARET + '</button></div>' +
-            '<div class="it-body"><div class="facts">' + factBox(it, "have") + factBox(it, "left") + '</div>' +
+            '<div class="it-body"><div class="facts">' + factBox(it, "title") + factBox(it, "have") + factBox(it, "left") + '</div>' +
             '<div class="it-foot"><button class="note-btn" type="button" data-note="' + it[0] + '">Notes' + (c ? ' <span class="cnt">' + c + '</span>' : ' +') + '</button></div></div></li>';
         }).join("") + '</ul></section>';
     }).join("");
@@ -1525,6 +1538,12 @@
   $("tabs2").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) showTab(curTab === +b.dataset.ix ? -1 : +b.dataset.ix); });
   $("cols").addEventListener("click", function (e) {
     var nb = e.target.closest(".note-btn"); if (nb) { openNotes(nb.dataset.note); return; }
+    var ck = e.target.closest(".ck");
+    if (ck) {
+      var cid = ck.closest(".it").dataset.id;
+      if (!ck.disabled && db && !PEND[cid]) setStatus(cid, stOf(cid) === "done" ? (BYID[cid][2] !== "done" ? BYID[cid][2] : "part") : "done");
+      return;
+    }
     var pk = e.target.closest(".it-head .chip");
     if (pk) { if (!pk.disabled && db && !PEND[pk.closest(".it").dataset.id]) openPicker(pk.closest(".it").dataset.id); return; }
     var eb = e.target.closest("[data-ed]");
